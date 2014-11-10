@@ -232,6 +232,9 @@
     <Content Include="config\BaseRestExtensions.config" />
     <Content Include="config\applications.config" />
     <Content Include="config\404handlers.config" />
+    <Content Include="Views\DT1.cshtml" />
+    <Content Include="App_Browsers\Form.browser" />
+    <Content Include="App_Browsers\w3cvalidator.browser" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -241,6 +244,15 @@
     <Content Include="xslt\Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\Logs\foo.txt" />
+    <Content Include="App_Data\NuGetBackup\foo.txt" />
+    <Content Include="App_Data\packages\foo.txt" />
+    <Content Include="App_Data\preview\foo.txt" />
+    <Content Include="App_Data\TEMP\foo.txt" />
+    <Content Include="App_Data\Umbraco.sdf" />
+    <Content Include="App_Plugins\dummy.txt" />
+    <Content Include="config\splashes\booting.aspx" />
+    <Content Include="config\splashes\noNodes.aspx" />
     <Content Include="css\dummy.txt" />
     <Content Include="default.aspx" />
     <Content Include="Global.asax" />
@@ -251,7 +263,13 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Base\PageControllerBase.cs" />
+    <Compile Include="Controllers\Dt1Controller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\MacroPartials\" />
+    <Folder Include="Views\Partials\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
