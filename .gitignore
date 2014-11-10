@@ -1,0 +1,11 @@
+*.suo
+*.user
+packages/
+uMigrations.MvcTest/App_Data/Logs/
+uMigrations.MvcTest/App_Data/TEMP/
+uMigrations.MvcTest/App_Data/NuGetBackup/
+#uMigrations.MvcTest/App_Data/preview/
+#uMigrations.MvcTest/App_Data/packages
+uMigrations.MvcTest/bin/
+[Oo]bj/
+uMigrations.MvcTest/App_Data/umbraco.config
