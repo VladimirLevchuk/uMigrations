@@ -1,0 +1,18 @@
+<!-- <?xml version="1.0"?> -->
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <!-- <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl> -->
+    <projectUrl>https://github.com/VladimirLevchuk/uMigrations/</projectUrl>
+    <iconUrl>https://raw.github.com/VladimirLevchuk/EPiProperties/master/EPiProperties/images/creuna.gif</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Umbraco code-first migration</tags>
+  </metadata>
+</package>
