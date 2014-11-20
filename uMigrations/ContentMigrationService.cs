@@ -13,11 +13,15 @@ namespace uMigrations
     {
         protected IContentTypeService ContentTypeService { get; private set; }
         protected IContentService ContentService { get; private set; }
+        protected MigrationsSettings MigrationsSettings { get; private set; }
 
-        public ContentMigrationService(IContentTypeService contentTypeService, IContentService contentService)
+        public ContentMigrationService(IContentTypeService contentTypeService, 
+            IContentService contentService,
+            MigrationsSettings migrationsSettings)
         {
             ContentTypeService = contentTypeService;
             ContentService = contentService;
+            MigrationsSettings = migrationsSettings;
         }
 
         public virtual IEnumerable<IContent> GetContentOfType(string contentTypeAlias)
@@ -39,6 +43,31 @@ namespace uMigrations
         public virtual IContentType GetContentType(string contentTypeAlias)
         {
             return ContentTypeService.GetContentType(contentTypeAlias);
+        }
+
+        public void UpdateContent(IContent content)
+        {
+            if (content.Published)
+            {
+                ContentService.SaveAndPublishWithStatus(content, GetSystemUserId(), false);
+            }
+            else
+            {
+                ContentService.Save(content, GetSystemUserId(), false);
+            }
+        }
+
+        protected virtual int GetSystemUserId()
+        {
+            return MigrationsSettings.SystemUserId;
+        }
+
+        public void UpdateContentTypes(params IContentType[] contentTypes)
+        {
+            foreach (var contentType in contentTypes)
+            {
+                ContentTypeService.Save(contentType);
+            }
         }
     }
 }

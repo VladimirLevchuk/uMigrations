@@ -10,5 +10,15 @@ namespace uMigrations
 
         bool IsContentOfType(IContent content, string contentTypeAlias);
         IContentType GetContentType(string contentTypeAlias);
+        void UpdateContent(IContent content);
+        void UpdateContentTypes(params IContentType[] contentTypes);
+    }
+
+    public class MigrationsSettings
+    {
+        public virtual int SystemUserId
+        {
+            get { return 0; }
+        }
     }
 }

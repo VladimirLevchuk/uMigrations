@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using log4net;
 using log4net.Core;
+using Umbraco.Core;
+using Umbraco.Core.Models;
 using Umbraco.Core.Services;
 using umbraco.webservices;
 using uMigrations.Metadata;
@@ -45,7 +47,8 @@ namespace uMigrations
             }            
         }
 
-        public virtual void MoveProperty(string sourceTypeAlias, string destinationTypeAlias, string propertyAlias)
+        public virtual void MoveProperty(string sourceTypeAlias, string destinationTypeAlias, 
+            string propertyAlias, string tabName = null)
         {
             var contentToUpdate = ContentMigrationService.GetContentOfType(sourceTypeAlias).ToList();
 
@@ -79,18 +82,77 @@ namespace uMigrations
             var sourceContentType = ContentMigrationService.GetContentType(sourceTypeAlias);
             var destinationContentType = ContentMigrationService.GetContentType(destinationTypeAlias);
 
-            var propertyType = sourceContentType.PropertyTypes.First(x => x.Alias == propertyAlias);
+            var oldPropertyType = sourceContentType.PropertyTypes.FirstOrDefault(x => x.Alias == propertyAlias);
 
-            sourceContentType.RemovePropertyType(propertyAlias);
-            destinationContentType.AddPropertyType(propertyType);
+            if (oldPropertyType == null)
+            {
+                var message = string.Format("Property '{0}' is not found in type '{1}' ",
+                    propertyAlias, sourceTypeAlias);
+                throw new InvalidOperationException(message);
+            }
+
+            var oldPropertyAlias = RenamePropertyForDeletion(oldPropertyType, propertyAlias);
+            var newProperty = CopyPropertyType(propertyAlias, oldPropertyType);
+            //var mandatory = newProperty.Mandatory; // do we need to handle mandatory fields separately?
+            //newProperty.Mandatory = false;
+            
+            if (tabName != null)
+            {
+                // todo ? do we need to create a new property group ?
+                destinationContentType.AddPropertyType(newProperty, tabName);
+            }
+            else
+            {
+                destinationContentType.AddPropertyType(newProperty);
+            }
+
+            ContentMigrationService.UpdateContentTypes(sourceContentType, destinationContentType);
 
             //// todo: use parralel execution here
+            foreach (var content in contentToUpdate)
+            {
+                var value = content.GetValue(oldPropertyAlias);
+                content.SetValue(propertyAlias, value);
 
-            ////foreach (var content in contentToUpdate)
-            ////{
-            ////    content.ContentType.MovePropertyType()
-            //}
+                ContentMigrationService.UpdateContent(content);
+            }
+
+            if (sourceContentType.RemoveContentType(oldPropertyAlias))
+            {
+                ContentMigrationService.UpdateContentTypes(sourceContentType);
+            }
         }
+
+        private PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType)
+        {
+            var dtd = ApplicationContext.Current.Services.DataTypeService.GetDataTypeDefinitionById(propertyType.DataTypeDefinitionId);
+            var result = new PropertyType(dtd)
+            {
+                Alias = propertyAlias,
+                Description = propertyType.Description,
+                Mandatory = propertyType.Mandatory,
+                SortOrder = propertyType.SortOrder,
+                ValidationRegExp = propertyType.ValidationRegExp,
+                Name = propertyType.Name
+            };
+
+            return result;
+        }
+
+        private string RenamePropertyForDeletion(PropertyType propertyType, string propertyAlias)
+        {
+            if (propertyType == null) throw new ArgumentNullException("propertyType");
+            propertyType.Alias = propertyAlias + "_" + MigrationRuntimeId;
+            return propertyType.Alias;
+        }
+
+        private readonly Lazy<string> _migrationRuntimeId = new Lazy<string>(() => DateTime.Now.ToString("s").Replace("-", "_").Replace(":", "_"));
+
+        public virtual string MigrationRuntimeId
+        {
+            get { return _migrationRuntimeId.Value; }
+        }
+        
     }
 
     public interface IMigrationAction

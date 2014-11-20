@@ -6,6 +6,7 @@ namespace uMigrations
 {
     public class MigrationContext
     {
+        public virtual MigrationsSettings MigrationSettings { get; private set; }
         public virtual IContentMigrationService ContentMigrationService { get; private set; }
         public virtual IMigrationTransactionProvider TransactionProvider { get; private set; }
         public virtual IMigrationsApi Api { get; private set; }
@@ -13,10 +14,9 @@ namespace uMigrations
 
         public static MigrationContext Current = CreateDefaultContext();
 
-        public MigrationContext(IContentMigrationService contentMigrationService, 
-            IMigrationTransactionProvider transactionProvider,
-            IMigrationsApi api, Func<Type, ILog> logFactoryMethod)
+        public MigrationContext(MigrationsSettings migrationSettings, IContentMigrationService contentMigrationService, IMigrationTransactionProvider transactionProvider, IMigrationsApi api, Func<Type, ILog> logFactoryMethod)
         {
+            MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
             TransactionProvider = transactionProvider;
             Api = api;
@@ -27,16 +27,17 @@ namespace uMigrations
         {
             var dbContext = ApplicationContext.Current.DatabaseContext;
             var services = ApplicationContext.Current.Services;
+            var migrationSettings = new MigrationsSettings();
 
             var contentMigrationService = new ContentMigrationService(services.ContentTypeService,
-                services.ContentService);
+                services.ContentService, migrationSettings);
             var transactionProvider = new MigrationTransactionProvider(dbContext);
             Func<Type, ILog> logFactoryMethod = LogManager.GetLogger;
 
             var api = new MigrationsApi(contentMigrationService, transactionProvider,
                 logFactoryMethod(typeof (MigrationsApi)));
 
-            var result = new MigrationContext(contentMigrationService, transactionProvider, api, logFactoryMethod);
+            var result = new MigrationContext(migrationSettings, contentMigrationService, transactionProvider, api, logFactoryMethod);
             return result;
         }
     }

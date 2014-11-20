@@ -9,6 +9,6 @@ namespace uMigrations
 {
     public interface IMigrationsApi
     {
-        void MoveProperty(string sourceTypeAlias, string destinationTypeAlias, string propertyAlias);
+        void MoveProperty(string sourceTypeAlias, string destinationTypeAlias, string propertyAlias, string tabName = null);
     }
 }

@@ -13,9 +13,10 @@ namespace uMigrations.MvcTest
     {
         public static void Run()
         {
-            using (MigrationContext.Current.TransactionProvider.BeginTransaction())
+            using (var tran = MigrationContext.Current.TransactionProvider.BeginTransaction())
             {
                 new TestMigration().Up();
+                tran.Commit();
             }
         }
     }
