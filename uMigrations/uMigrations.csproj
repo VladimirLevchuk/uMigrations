@@ -120,6 +120,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SqlServerCe">
       <HintPath>..\packages\UmbracoCms.Core.7.1.8\lib\System.Data.SqlServerCe.dll</HintPath>
@@ -231,6 +232,7 @@
     <Compile Include="Metadata\TabDefinition.cs" />
     <Compile Include="MigrationContext.cs" />
     <Compile Include="MigrationsApi.cs" />
+    <Compile Include="MigrationsSettings.cs" />
     <Compile Include="MigrationTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

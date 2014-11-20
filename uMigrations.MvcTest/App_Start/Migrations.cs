@@ -13,6 +13,11 @@ namespace uMigrations.MvcTest
     {
         public static void Run()
         {
+            if (MigrationContext.Current.MigrationSettings.SkipMigrations)
+            {
+                return;
+            }
+
             using (var tran = MigrationContext.Current.TransactionProvider.BeginTransaction())
             {
                 new TestMigration().Up();
@@ -26,11 +31,12 @@ namespace uMigrations.MvcTest
         public virtual void Up()
         {
             // MigrationContext.Current.Api.MoveProperty("SecondLevelDT2", "FirstLevelDT", "property1");
+            MigrationContext.Current.Api.MovePropertyUp("Level2", "Level1", "level2Prop2");
         }
 
         public virtual void Down()
         {
-           
+            MigrationContext.Current.Api.MovePropertyUp("Level1", "Level2", "level2Prop2");
         }
     }
 }

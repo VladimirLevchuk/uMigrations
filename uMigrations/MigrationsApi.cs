@@ -47,8 +47,7 @@ namespace uMigrations
             }            
         }
 
-        public virtual void MoveProperty(string sourceTypeAlias, string destinationTypeAlias, 
-            string propertyAlias, string tabName = null)
+        public virtual void MovePropertyUp(string sourceTypeAlias, string destinationTypeAlias, string propertyAlias, string tabName = null)
         {
             var contentToUpdate = ContentMigrationService.GetContentOfType(sourceTypeAlias).ToList();
 
@@ -117,10 +116,8 @@ namespace uMigrations
                 ContentMigrationService.UpdateContent(content);
             }
 
-            if (sourceContentType.RemoveContentType(oldPropertyAlias))
-            {
-                ContentMigrationService.UpdateContentTypes(sourceContentType);
-            }
+            sourceContentType.RemovePropertyType(oldPropertyAlias);
+            ContentMigrationService.UpdateContentTypes(sourceContentType);
         }
 
         private PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType)

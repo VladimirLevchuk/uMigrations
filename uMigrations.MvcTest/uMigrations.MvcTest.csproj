@@ -282,6 +282,7 @@
     <Compile Include="Models\CustomEditors.cs" />
     <Compile Include="Models\DataTypes\MultiMediaPicker.cs" />
     <Compile Include="Models\DataTypes\MultiContentPicker.cs" />
+    <Compile Include="Models\DocumentTypes\Base1.cs" />
     <Compile Include="Models\DocumentTypes\ThirdLevelDT.cs" />
     <Compile Include="Models\DocumentTypes\FirstLevelDT.cs" />
     <Compile Include="Models\DocumentTypes\FourthLevelDT.cs" />
