@@ -5,29 +5,44 @@ using System.Linq;
 using Umbraco.Core;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
+using Umbraco.Web.Media.EmbedProviders.Settings;
 using uMigrations.Metadata;
 
 namespace uMigrations
 {
     public class ContentMigrationService : IContentMigrationService
     {
+        protected IMigration Migration { get; private set; }
         protected IContentTypeService ContentTypeService { get; private set; }
         protected IContentService ContentService { get; private set; }
+        protected IDataTypeService DataTypeService { get; private set; }
         protected MigrationsSettings MigrationsSettings { get; private set; }
 
-        public ContentMigrationService(IContentTypeService contentTypeService, 
+        public ContentMigrationService(
+            IMigration migration,
+            IContentTypeService contentTypeService, 
             IContentService contentService,
+            IDataTypeService dataTypeService,
             MigrationsSettings migrationsSettings)
         {
+            Migration = migration;
             ContentTypeService = contentTypeService;
             ContentService = contentService;
+            DataTypeService = dataTypeService;
             MigrationsSettings = migrationsSettings;
         }
 
-        public virtual IEnumerable<IContent> GetContentOfType(string contentTypeAlias)
+        public virtual List<IContent> GetContentOfType(string contentTypeAlias)
         {
             var contentType = GetContentType(contentTypeAlias);
-            var result = ContentService.GetContentOfContentType(contentType.Id);
+            var result = ContentService.GetContentOfContentType(contentType.Id).ToList();
+            return result;
+        }
+
+        public List<IContent> GetContentOfTypes(IEnumerable<string> contentTypeAliases)
+        {
+            var query = contentTypeAliases.SelectMany(GetContentOfType).DistinctBy(x => x.Id);
+            var result = query.ToList();
             return result;
         }
 
@@ -62,12 +77,43 @@ namespace uMigrations
             return MigrationsSettings.SystemUserId;
         }
 
-        public void UpdateContentTypes(params IContentType[] contentTypes)
+        public virtual void UpdateContentTypes(params IContentType[] contentTypes)
         {
             foreach (var contentType in contentTypes)
             {
                 ContentTypeService.Save(contentType);
             }
+        }
+
+        public virtual PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType)
+        {
+            var dtd = DataTypeService.GetDataTypeDefinitionById(propertyType.DataTypeDefinitionId);
+            var result = new PropertyType(dtd)
+            {
+                Alias = propertyAlias,
+                Description = propertyType.Description,
+                Mandatory = propertyType.Mandatory,
+                SortOrder = propertyType.SortOrder,
+                ValidationRegExp = propertyType.ValidationRegExp,
+                Name = propertyType.Name
+            };
+
+            return result;
+        }
+
+        public virtual string RenamePropertyForDeletion(PropertyType propertyType, string propertyAlias)
+        {
+            if (propertyType == null) throw new ArgumentNullException("propertyType");
+            propertyType.Alias = propertyAlias + "_" +  Migration.MigrationRuntimeId;
+            return propertyType.Alias;
+        }
+
+        public virtual PropertyType GetPropetyType(IContentType contentType, string alias)
+        {
+            var result =
+                contentType.PropertyTypes.FirstOrDefault(
+                    x => x.Alias.Equals(alias, StringComparison.InvariantCultureIgnoreCase));
+            return result;
         }
     }
 }
