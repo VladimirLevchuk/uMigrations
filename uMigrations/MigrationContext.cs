@@ -11,11 +11,14 @@ namespace uMigrations
         public virtual IMigrationTransactionProvider TransactionProvider { get; private set; }
         public virtual IMigrationsApi Api { get; private set; }
         public virtual Func<Type, ILog> LogFactoryMethod { get; private set; }
+        // public virtual IMigrationProvider MigrationProvider { get; private set; }
+        public virtual IMigrationRunner Runner { get; private set; }
 
         public static MigrationContext Current = CreateDefaultContext();
 
-        public MigrationContext(MigrationsSettings migrationSettings, IContentMigrationService contentMigrationService, IMigrationTransactionProvider transactionProvider, IMigrationsApi api, Func<Type, ILog> logFactoryMethod)
+        public MigrationContext(MigrationsSettings migrationSettings, IContentMigrationService contentMigrationService, IMigrationTransactionProvider transactionProvider, IMigrationsApi api, Func<Type, ILog> logFactoryMethod, IMigrationRunner runner)
         {
+            Runner = runner;
             MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
             TransactionProvider = transactionProvider;
@@ -30,14 +33,16 @@ namespace uMigrations
             var migrationSettings = new MigrationsSettings();
 
             var contentMigrationService = new ContentMigrationService(services.ContentTypeService,
-                services.ContentService, migrationSettings);
+                services.ContentService, services.DataTypeService, migrationSettings);
             var transactionProvider = new MigrationTransactionProvider(dbContext);
             Func<Type, ILog> logFactoryMethod = LogManager.GetLogger;
 
-            var api = new MigrationsApi(contentMigrationService, transactionProvider,
-                logFactoryMethod(typeof (MigrationsApi)));
+            var runner = new ManualMigrationRunner(logFactoryMethod(typeof(MigrationsApi)), transactionProvider);
+            //var api = new MigrationsApi(contentMigrationService, transactionProvider,
+            //    logFactoryMethod(typeof (MigrationsApi)));
 
-            var result = new MigrationContext(migrationSettings, contentMigrationService, transactionProvider, api, logFactoryMethod);
+            var result = new MigrationContext(migrationSettings, 
+                contentMigrationService, transactionProvider, null, logFactoryMethod, runner);
             return result;
         }
     }

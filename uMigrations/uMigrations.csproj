@@ -220,21 +220,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContentMigrationService.cs" />
+    <Compile Include="CustomMigration.cs" />
     <Compile Include="IContentMigrationService.cs" />
+    <Compile Include="IMigration.cs" />
+    <Compile Include="IMigrationAction.cs" />
+    <Compile Include="IMigrationRunner.cs" />
     <Compile Include="IMigrationsApi.cs" />
+    <Compile Include="IMigrationStep.cs" />
     <Compile Include="IMigrationTransaction.cs" />
     <Compile Include="IMigrationTransactionProvider.cs" />
+    <Compile Include="ITransactionStateChangedNotifier.cs" />
+    <Compile Include="ManualMigrationRunner.cs" />
     <Compile Include="Metadata\DataTypeDefinition.cs" />
     <Compile Include="Metadata\CodePropertyDefinition.cs" />
     <Compile Include="Metadata\DocumentTypeDefinition.cs" />
     <Compile Include="Metadata\PropertyDefinition.cs" />
     <Compile Include="Metadata\Providers\CodeAnnotationAttributesMetadataProvider.cs" />
     <Compile Include="Metadata\TabDefinition.cs" />
+    <Compile Include="MigrationBase.cs" />
     <Compile Include="MigrationContext.cs" />
     <Compile Include="MigrationsApi.cs" />
     <Compile Include="MigrationsSettings.cs" />
+    <Compile Include="MigrationStepBase.cs" />
     <Compile Include="MigrationTransaction.cs" />
+    <Compile Include="MovePropertyBase.cs" />
+    <Compile Include="MovePropertyDownParameters.cs" />
+    <Compile Include="MovePropertyUp.cs" />
+    <Compile Include="MovePropertyUpFluentExtensions.cs" />
+    <Compile Include="MovePropertyUpParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TransactionStateChangedEventArgs.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

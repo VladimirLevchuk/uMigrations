@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using log4net;
-using Umbraco.Core;
-using Umbraco.Core.Persistence.Migrations;
-using Umbraco.Core.Services;
 
 namespace uMigrations.MvcTest
 {
@@ -13,30 +6,21 @@ namespace uMigrations.MvcTest
     {
         public static void Run()
         {
-            if (MigrationContext.Current.MigrationSettings.SkipMigrations)
-            {
-                return;
-            }
-
-            using (var tran = MigrationContext.Current.TransactionProvider.BeginTransaction())
-            {
-                new TestMigration().Up();
-                tran.Commit();
-            }
+            MigrationContext.Current.Runner.Upgrade(new CustomMigration(new TestMigrationStep()));
         }
     }
 
-    public class TestMigration : IMigration
+    public class TestMigrationStep : MigrationStepBase
     {
-        public virtual void Up()
+        protected override void Apply(FluentMigrationStepDefinition migration)
         {
-            // MigrationContext.Current.Api.MoveProperty("SecondLevelDT2", "FirstLevelDT", "property1");
-            MigrationContext.Current.Api.MovePropertyUp("Level2", "Level1", "level2Prop2");
+            migration.MoveProperty("level2Prop2").ToBaseType("Level1").FromTypes("Level2");
         }
 
-        public virtual void Down()
+        protected override void Remove(FluentMigrationStepDefinition migration)
         {
-            MigrationContext.Current.Api.MovePropertyUp("Level1", "Level2", "level2Prop2");
+            // migration.MoveProperty("level2Prop2").ToDerivedTypes("Level2").FromType("Level1");
+            throw new NotImplementedException();
         }
     }
 }

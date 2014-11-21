@@ -1,9 +1,12 @@
+using System;
 using System.Configuration;
 
 namespace uMigrations
 {
     public class MigrationsSettings
     {
+        private readonly Lazy<string> _migrationRuntimeId = new Lazy<string>(() => DateTime.Now.ToString("s").Replace("-", "_").Replace(":", "_"));
+
         public virtual int SystemUserId
         {
             get { return GetIntAppSetting("uMigrations.SystemUserId", 0); }
@@ -14,6 +17,11 @@ namespace uMigrations
             get { return GetBooleanAppSetting("uMigrations.Skip", false); }
         }
 
+        public virtual string MigrationRuntimeId
+        {
+            get { return _migrationRuntimeId.Value; }
+        }
+
         protected bool GetBooleanAppSetting(string name, bool defaultValue = false)
         {
             var stringValue = ConfigurationManager.AppSettings[name];
@@ -22,7 +30,7 @@ namespace uMigrations
                 return defaultValue;
             } 
 
-            var result = defaultValue;
+            bool result;
             return bool.TryParse(stringValue, out result) ? result : defaultValue;
         }
 
@@ -33,7 +41,7 @@ namespace uMigrations
             {
                 return defaultValue;
             }
-            var result = defaultValue;
+            int result;
             return int.TryParse(stringValue, out result) ? result : defaultValue;
         }
     }

@@ -12,20 +12,17 @@ namespace uMigrations
 {
     public class ContentMigrationService : IContentMigrationService
     {
-        protected IMigration Migration { get; private set; }
         protected IContentTypeService ContentTypeService { get; private set; }
         protected IContentService ContentService { get; private set; }
         protected IDataTypeService DataTypeService { get; private set; }
         protected MigrationsSettings MigrationsSettings { get; private set; }
 
         public ContentMigrationService(
-            IMigration migration,
             IContentTypeService contentTypeService, 
             IContentService contentService,
             IDataTypeService dataTypeService,
             MigrationsSettings migrationsSettings)
         {
-            Migration = migration;
             ContentTypeService = contentTypeService;
             ContentService = contentService;
             DataTypeService = dataTypeService;
@@ -77,12 +74,9 @@ namespace uMigrations
             return MigrationsSettings.SystemUserId;
         }
 
-        public virtual void UpdateContentTypes(params IContentType[] contentTypes)
+        public virtual void UpdateContentType(IContentType contentType)
         {
-            foreach (var contentType in contentTypes)
-            {
-                ContentTypeService.Save(contentType);
-            }
+            ContentTypeService.Save(contentType);
         }
 
         public virtual PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType)
@@ -101,11 +95,10 @@ namespace uMigrations
             return result;
         }
 
-        public virtual string RenamePropertyForDeletion(PropertyType propertyType, string propertyAlias)
+        public virtual void RenameProperty(PropertyType propertyType, string newAlias)
         {
             if (propertyType == null) throw new ArgumentNullException("propertyType");
-            propertyType.Alias = propertyAlias + "_" +  Migration.MigrationRuntimeId;
-            return propertyType.Alias;
+            propertyType.Alias = newAlias;
         }
 
         public virtual PropertyType GetPropetyType(IContentType contentType, string alias)

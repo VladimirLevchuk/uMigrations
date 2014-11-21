@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Umbraco.Core.Models;
-using uMigrations.Metadata;
 
 namespace uMigrations
 {
@@ -12,9 +11,10 @@ namespace uMigrations
         bool IsContentOfType(IContent content, string contentTypeAlias);
         IContentType GetContentType(string contentTypeAlias);
         void UpdateContent(IContent content);
-        void UpdateContentTypes(params IContentType[] contentTypes);
+        void UpdateContentType(IContentType contentTypes);
+
         PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType);
-        string RenamePropertyForDeletion(PropertyType propertyType, string propertyAlias);
+        void RenameProperty(PropertyType propertyType, string newAlias);
         PropertyType GetPropetyType(IContentType contentType, string alias);
     }
 }
