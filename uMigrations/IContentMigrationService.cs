@@ -16,5 +16,6 @@ namespace uMigrations
         PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType);
         void RenameProperty(PropertyType propertyType, string newAlias);
         PropertyType GetPropetyType(IContentType contentType, string alias);
+        void RepublishAllContent();
     }
 }

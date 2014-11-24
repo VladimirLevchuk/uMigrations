@@ -37,7 +37,7 @@ namespace uMigrations
             var transactionProvider = new MigrationTransactionProvider(dbContext);
             Func<Type, ILog> logFactoryMethod = LogManager.GetLogger;
 
-            var runner = new ManualMigrationRunner(logFactoryMethod(typeof(MigrationsApi)), transactionProvider);
+            var runner = new ManualMigrationRunner(logFactoryMethod(typeof(MigrationsApi)), transactionProvider, contentMigrationService);
             //var api = new MigrationsApi(contentMigrationService, transactionProvider,
             //    logFactoryMethod(typeof (MigrationsApi)));
 

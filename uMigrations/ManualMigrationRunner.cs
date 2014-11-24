@@ -8,10 +8,12 @@ namespace uMigrations
     public class ManualMigrationRunner : IMigrationRunner
     {
         protected IMigrationTransactionProvider MigrationTransactionProvider { get; private set; }
+        protected IContentMigrationService ContentMigrationService { get; private set; }
         protected ILog Log { get; private set; }
 
-        public ManualMigrationRunner(ILog log, IMigrationTransactionProvider migrationTransactionProvider)
+        public ManualMigrationRunner(ILog log, IMigrationTransactionProvider migrationTransactionProvider, IContentMigrationService contentMigrationService)
         {
+            ContentMigrationService = contentMigrationService;
             Log = log;
             MigrationTransactionProvider = migrationTransactionProvider;
         }
@@ -76,6 +78,8 @@ namespace uMigrations
                             migrationAction.Run();
                         }
                     }
+
+                    ContentMigrationService.RepublishAllContent();
                     
                     tran.Commit();
                 }

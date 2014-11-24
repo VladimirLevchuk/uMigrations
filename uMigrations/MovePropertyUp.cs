@@ -140,6 +140,8 @@ namespace uMigrations
             var newProperty = CreateDestinationPropertyType(destinationContentType,
                 tabName, newPropertyTempName, propertyToCreateaNewOneFrom);
 
+            ContentMigrationService.RepublishAllContent();
+
             UpdateContent(newPropertyTempName, propertyAlias, mandatory, defaultValue);
             
             if (mandatory)

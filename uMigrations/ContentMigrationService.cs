@@ -79,6 +79,11 @@ namespace uMigrations
             ContentTypeService.Save(contentType);
         }
 
+        public virtual void RepublishAllContent()
+        {
+            ContentService.RePublishAll();
+        }
+
         public virtual PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType)
         {
             var dtd = DataTypeService.GetDataTypeDefinitionById(propertyType.DataTypeDefinitionId);
