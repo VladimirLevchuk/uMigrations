@@ -67,6 +67,8 @@ namespace uMigrations
                 throw new Exception(string.Format("Destination Content type '{0}' not found. ", destinationTypeAlias));
             }
 
+            int? propertyDataType = null;
+
             // todo: measure performance and cache property types if needed
             foreach (var sourceType in sourceTypes)
             {
@@ -84,6 +86,22 @@ namespace uMigrations
                     var message = string.Format("Property '{0}' is not found in type '{1}' ",
                         propertyAlias, sourceType);
                     migrationProblems.Add(new InvalidOperationException(message));
+                }
+                else
+                {
+                    if (propertyDataType.HasValue)
+                    {
+                        if (property.DataTypeDefinitionId != propertyDataType.Value)
+                        {
+                            var message = string.Format("Property '{0}' of type '{1}' data type id is '{2}' but '{3}' is expected. ",
+                                propertyAlias, sourceType, property.DataTypeDefinitionId, propertyDataType);
+                            migrationProblems.Add(new InvalidOperationException(message));
+                        }
+                    }
+                    else
+                    {
+                        propertyDataType = property.DataTypeDefinitionId;
+                    }
                 }
             }
 
