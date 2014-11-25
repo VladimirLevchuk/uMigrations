@@ -23,12 +23,12 @@ namespace uMigrations
             throw new NotImplementedException();
         }
 
-        public virtual void Upgrade(IMigration migration)
+        public virtual void Apply(IMigration migration)
         {
             Run(migration, x => x.ApplyActions);
         }
 
-        public virtual void Downgrade(IMigration migration)
+        public virtual void Remove(IMigration migration)
         {
             Run(migration, x => x.RemoveActions);
         }

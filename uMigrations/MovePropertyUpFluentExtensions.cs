@@ -10,6 +10,7 @@ namespace uMigrations
             public FluentExtensions.MovePropertyClause MovePropertyClause { get; set; }
             public string DestinationContentType { get; set; }
             public object DefaultValue { get; set; }
+            public bool IsDefaultSet { get; set; }
             public bool IsMandatory { get; set; }
             public string TabName { get; set; }
 
@@ -29,6 +30,7 @@ namespace uMigrations
             public MovePropertyToBaseTypeClause WithDefault(object value)
             {
                 DefaultValue = value;
+                IsDefaultSet = true;
                 return this;
             }
 
