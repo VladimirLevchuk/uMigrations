@@ -126,8 +126,8 @@ namespace uMigrations
             var newProperty = CreatePropertyType(destinationContentType,
                 tabName, newPropertyTempName, propertyToCreateaNewOneFrom);
 
-            ContentMigrationService.RepublishAllContent();
-            ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
             UpdateContent(newPropertyTempName, propertyAlias, mandatory, defaultValue);
             
             if (mandatory)
@@ -138,7 +138,7 @@ namespace uMigrations
             RenameProperty(destinationContentType, newProperty, propertyAlias);
 
             RemoveProperties(sourceContentTypes, propertyAlias);
-            ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
         }
 
         //private PropertyType CreateDestinationPropertyType(

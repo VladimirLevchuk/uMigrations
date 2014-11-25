@@ -26,7 +26,7 @@ namespace uMigrations
 
         protected override List<IContent> GetContentToUpdate()
         {
-            return ContentMigrationService.GetContentOfType(Parameters.SourceTypeAlias).ToList();
+            return ContentMigrationService.GetContentOfTypes(Parameters.DestinationTypes).ToList();
         }
 
         protected override List<Exception> DoValidate(MovePropertyDownParameters parameters)
@@ -67,12 +67,12 @@ namespace uMigrations
                 CreatePropertyType(destinationContentType, tabName, newPropertyTempName, propertyToCreateaNewOneFrom);
             }
 
-            ContentMigrationService.RepublishAllContent();
-            ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
             UpdateContent(newPropertyTempName, propertyAlias, mandatory, defaultValue);
 
             RemoveProperty(sourceContentType, propertyAlias);
-            ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
 
             destinationContentTypes = destinationTypes.Select(ContentMigrationService.GetContentType).ToList();
             
@@ -87,7 +87,7 @@ namespace uMigrations
                 RenameProperty(destinationContentType, newProperty, propertyAlias);
             }
 
-            ContentMigrationService.RepublishAllContent();
+            // ContentMigrationService.RepublishAllContent();
         }
     }
 

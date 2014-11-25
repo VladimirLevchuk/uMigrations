@@ -80,9 +80,13 @@ namespace uMigrations
             // todo: use parallel execution here
             foreach (var content in GetContentToUpdate())
             {
-                var value = content.GetValue(getPropertyAlias);
-
-                if (value == null && mandatory && defaultValue != null)
+                object value = null;
+                if (content.HasProperty(getPropertyAlias))
+                {
+                    value = content.GetValue(getPropertyAlias);
+                }
+                
+                if (value == null /* && mandatory */ && defaultValue != null)
                 {
                     value = defaultValue;
                 }
