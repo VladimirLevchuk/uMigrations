@@ -244,6 +244,7 @@
     <Compile Include="MigrationStepBase.cs" />
     <Compile Include="MigrationTransaction.cs" />
     <Compile Include="MovePropertyBase.cs" />
+    <Compile Include="MovePropertyDown.cs" />
     <Compile Include="MovePropertyDownParameters.cs" />
     <Compile Include="MovePropertyUp.cs" />
     <Compile Include="MovePropertyUpFluentExtensions.cs" />

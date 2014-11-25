@@ -6,51 +6,29 @@ using Umbraco.Core.Models;
 
 namespace uMigrations
 {
-    public class MovePropertyUp : MovePropertyBase
+    public class MovePropertyUp : MovePropertyBase<MovePropertyUpParameters>
     {
+        public override string ActionName
+        {
+            get { return "Move Property Up"; }
+        }
+
         public MovePropertyUp(MovePropertyUpParameters parameters, 
             MigrationsSettings migrationSettings,
             IContentMigrationService contentMigrationService, 
-            ILog log)
-        {
-            Parameters = parameters;
-            MigrationSettings = migrationSettings;
-            Log = log;
-            ContentMigrationService = contentMigrationService;
-            _contentToUpdate = new Lazy<List<IContent>>(GetContentToUpdate);
-        }
+            ILog log) : base(parameters, migrationSettings, contentMigrationService, log)
+        {}
 
         public MovePropertyUp(MovePropertyUpParameters parameters, MigrationContext context)
             : this(parameters, context.MigrationSettings, context.ContentMigrationService, context.LogFactoryMethod(typeof(MovePropertyUp)))
         {}
-
-        protected IContentMigrationService ContentMigrationService { get; private set; }
-        public MovePropertyUpParameters Parameters { get; private set; }
-        protected MigrationsSettings MigrationSettings { get; private set; }
-        protected ILog Log { get; private set; }
-
-        private readonly Lazy<List<IContent>> _contentToUpdate;
         
-        protected virtual List<IContent> GetContentToUpdate()
+        protected override List<IContent> GetContentToUpdate()
         {
-            return ContentMigrationService.GetContentOfTypes(Parameters.SourceTypes).ToList();
+            return ContentMigrationService.GetContentOfType(Parameters.DestinationTypeAlias).ToList();
         }
-
-        protected virtual List<IContent> ContentToUpdate
-        {
-            get
-            {
-                return GetContentToUpdate();
-                //return _contentToUpdate.Value;
-            }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("Migration Action 'Move Property Up' with parameters {0}", Parameters);
-        }
-
-        protected virtual List<Exception> DoValidate(MovePropertyUpParameters parameters)
+        
+        protected override List<Exception> DoValidate(MovePropertyUpParameters parameters)
         {
             IEnumerable<string> sourceTypes = parameters.SourceTypes;
             string destinationTypeAlias = parameters.DestinationTypeAlias;
@@ -72,22 +50,16 @@ namespace uMigrations
             // todo: measure performance and cache property types if needed
             foreach (var sourceType in sourceTypes)
             {
-                var sourceContentType = ContentMigrationService.GetContentType(sourceType);
+
+                var sourceContentType = ValidateAndGetContentType(migrationProblems, sourceType);
                 if (sourceContentType == null)
                 {
-                    migrationProblems.Add(new Exception(string.Format("Content type '{0}' not found. ", sourceType)));
                     continue;
                 }
 
-                var property = ContentMigrationService.GetPropetyType(sourceContentType, propertyAlias);
+                var property = ValidateAndGetProperty(migrationProblems, sourceContentType, propertyAlias);
 
-                if (property == null)
-                {
-                    var message = string.Format("Property '{0}' is not found in type '{1}' ",
-                        propertyAlias, sourceType);
-                    migrationProblems.Add(new InvalidOperationException(message));
-                }
-                else
+                if (property != null)
                 {
                     if (propertyDataType.HasValue)
                     {
@@ -105,36 +77,32 @@ namespace uMigrations
                 }
             }
 
-            foreach (var content in ContentToUpdate)
-            {
-                if (!ContentMigrationService.IsContentOfType(content, destinationTypeAlias))
-                {
-                    string message = string.Format("Content item #{0} of type '{1}' is not of type '{2}'", content.Id,
-                        content.ContentType.Alias, destinationTypeAlias);
-                    migrationProblems.Add(new InvalidOperationException(message));
-                }
+            //foreach (var content in GetContentToUpdate())
+            //{
+            //    ValidateContentIsOfType(migrationProblems, content, destinationTypeAlias);
+            //    if (!ContentMigrationService.IsContentOfType(content, destinationTypeAlias))
+            //    {
+            //        string message = string.Format("Content item #{0} of type '{1}' is not of type '{2}'", content.Id,
+            //            content.ContentType.Alias, destinationTypeAlias);
+            //        migrationProblems.Add(new InvalidOperationException(message));
+            //    }
 
-                if (mandatory && defaultValue == null)
-                {
-                    string message = string.Format("No value for mandatory field '{0}' on content item id #{1}", 
-                        propertyAlias, content.Id);
+            //    if (mandatory && defaultValue == null)
+            //    {
+            //        string message = string.Format("No value for mandatory field '{0}' on content item id #{1}", 
+            //            propertyAlias, content.Id);
 
-                    if (content.GetValue(propertyAlias) == null)
-                    {
-                        migrationProblems.Add(new InvalidOperationException(message));
-                    }
-                }
-            }
+            //        if (content.GetValue(propertyAlias) == null)
+            //        {
+            //            migrationProblems.Add(new InvalidOperationException(message));
+            //        }
+            //    }
+            //}
 
             return migrationProblems;
         }
 
-        public override List<Exception> Validate()
-        {
-            return DoValidate(Parameters);
-        }
-
-        protected virtual void DoRun(MovePropertyUpParameters parameters)
+        protected override void DoRun(MovePropertyUpParameters parameters)
         {
             IEnumerable<string> sourceTypes = parameters.SourceTypes;
             string destinationTypeAlias = parameters.DestinationTypeAlias;
@@ -155,11 +123,11 @@ namespace uMigrations
             }
 
             var newPropertyTempName = GetTempPropertyName(propertyAlias);
-            var newProperty = CreateDestinationPropertyType(destinationContentType,
+            var newProperty = CreatePropertyType(destinationContentType,
                 tabName, newPropertyTempName, propertyToCreateaNewOneFrom);
 
             ContentMigrationService.RepublishAllContent();
-
+            ContentMigrationService.RepublishAllContent();
             UpdateContent(newPropertyTempName, propertyAlias, mandatory, defaultValue);
             
             if (mandatory)
@@ -167,86 +135,35 @@ namespace uMigrations
                 newProperty.Mandatory = true;
             }
 
-            newProperty.Alias = propertyAlias;
-            ContentMigrationService.UpdateContentType(destinationContentType);
+            RenameProperty(destinationContentType, newProperty, propertyAlias);
 
-            RemoveSourceProperties(sourceContentTypes, propertyAlias);
+            RemoveProperties(sourceContentTypes, propertyAlias);
+            ContentMigrationService.RepublishAllContent();
         }
 
-        private void RemoveSourceProperties(List<IContentType> sourceContentTypes, string oldPropertyTempAlias)
-        {
-            sourceContentTypes.ForEach(x =>
-            {
-                x.RemovePropertyType(oldPropertyTempAlias);
-                ContentMigrationService.UpdateContentType(x);
-            });
-        }
-
-        private void UpdateContent(string setPropertyAlias, string getPropertyAlias, bool mandatory, object defaultValue)
-        {
-            // todo: use parallel execution here
-            foreach (var content in ContentToUpdate)
-            {
-                var value = content.GetValue(getPropertyAlias);
-
-                if (value == null && mandatory && defaultValue != null)
-                {
-                    value = defaultValue;
-                }
-
-                content.SetValue(setPropertyAlias, value);
-
-                ContentMigrationService.UpdateContent(content);
-            }
-        }
-
-        //private string RenameSourceProperties(IEnumerable<PropertyType> oldProperties, string propertyAlias)
+        //private PropertyType CreateDestinationPropertyType(
+        //    IContentType destinationContentType,
+        //    string tabName,
+        //    string propertyAlias, 
+        //    PropertyType propertyToCreateANewOneFrom)
         //{
-        //    string oldPropertyTempAlias = GetTempPropertyName(propertyAlias);
+        //    var newProperty = ContentMigrationService.CopyPropertyType(propertyAlias, propertyToCreateANewOneFrom);
+            
+        //    newProperty.Mandatory = false;
 
-        //    foreach (var oldProperty in oldProperties)
+        //    if (tabName != null)
         //    {
-        //        ContentMigrationService.RenameProperty(oldProperty, oldPropertyTempAlias);
-        //        // ContentMigrationService.UpdateContentType();
+        //        // todo ? do we need to create a new property group ?
+        //        destinationContentType.AddPropertyType(newProperty, tabName);
         //    }
-            
-        //    return oldPropertyTempAlias;
+        //    else
+        //    {
+        //        destinationContentType.AddPropertyType(newProperty);
+        //    }
+
+        //    ContentMigrationService.UpdateContentType(destinationContentType);
+
+        //    return newProperty;
         //}
-
-        protected virtual string GetTempPropertyName(string propertyAlias)
-        {
-            var result = propertyAlias + "_" + MigrationSettings.MigrationRuntimeId;
-            return result;
-        }
-
-        private PropertyType CreateDestinationPropertyType(
-            IContentType destinationContentType,
-            string tabName,
-            string propertyAlias, 
-            PropertyType propertyToCreateANewOneFrom)
-        {
-            var newProperty = ContentMigrationService.CopyPropertyType(propertyAlias, propertyToCreateANewOneFrom);
-            
-            newProperty.Mandatory = false;
-
-            if (tabName != null)
-            {
-                // todo ? do we need to create a new property group ?
-                destinationContentType.AddPropertyType(newProperty, tabName);
-            }
-            else
-            {
-                destinationContentType.AddPropertyType(newProperty);
-            }
-
-            ContentMigrationService.UpdateContentType(destinationContentType);
-
-            return newProperty;
-        }
-
-        public override void Run()
-        {
-            DoRun(Parameters);
-        }
     }
 }
