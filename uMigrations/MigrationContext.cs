@@ -1,6 +1,8 @@
 using System;
 using log4net;
 using Umbraco.Core;
+using Umbraco.Core.Persistence;
+using Umbraco.Core.Services;
 
 namespace uMigrations
 {
@@ -29,11 +31,16 @@ namespace uMigrations
         static MigrationContext CreateDefaultContext()
         {
             var dbContext = ApplicationContext.Current.DatabaseContext;
-            var services = ApplicationContext.Current.Services;
+            // var services = ApplicationContext.Current.Services;
             var migrationSettings = new MigrationsSettings();
 
-            var contentMigrationService = new ContentMigrationService(services.ContentTypeService,
-                services.ContentService, services.DataTypeService, migrationSettings);
+            var repositoryFactory = new RepositoryFactory(disableAllCache: true);
+            var contentService = new ContentService(repositoryFactory);
+            var contentTypeService = new ContentTypeService(repositoryFactory, contentService, new MediaService(repositoryFactory));
+            var dataTypeService = new DataTypeService(repositoryFactory);
+
+            var contentMigrationService = new ContentMigrationService(contentTypeService,
+                contentService, dataTypeService, migrationSettings);
             var transactionProvider = new MigrationTransactionProvider(dbContext);
             Func<Type, ILog> logFactoryMethod = LogManager.GetLogger;
 
