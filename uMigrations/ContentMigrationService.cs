@@ -5,8 +5,6 @@ using System.Linq;
 using Umbraco.Core;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
-using Umbraco.Web.Media.EmbedProviders.Settings;
-using uMigrations.Metadata;
 
 namespace uMigrations
 {
@@ -36,20 +34,53 @@ namespace uMigrations
             return result;
         }
 
-        public List<IContent> GetContentOfTypes(IEnumerable<string> contentTypeAliases)
+        public virtual List<IContent> GetContentOfType(IContentType contentType)
         {
-            var query = contentTypeAliases.SelectMany(GetContentOfType).DistinctBy(x => x.Id);
+            var result = ContentService.GetContentOfContentType(contentType.Id).ToList();
+            return result;
+        }
+
+        public virtual List<IContent> GetContentOfTypeOrDerived(IContentType contentType)
+        {
+            var typeOrDerived = GetContentTypeOrDerivedTypes(contentType);
+            var result = GetContentOfTypes(typeOrDerived).ToList();
+            return result;
+        }
+
+        public virtual List<IContent> GetContentOfTypes(IEnumerable<string> contentTypeAliases)
+        {
+            return GetContentOfTypes(contentTypeAliases.Select(GetContentType));
+        }
+
+        public virtual List<IContent> GetContentOfTypes(IEnumerable<IContentType> contentTypes)
+        {
+            var query = contentTypes.SelectMany(GetContentOfType).DistinctBy(x => x.Id);
             var result = query.ToList();
             return result;
         }
 
-        public virtual bool IsContentOfType(IContent content, string contentTypeAlias)
+        public bool IsContentOfType(IContent content, string contentTypeAlias)
         {
             var typeToCheck = GetContentType(contentTypeAlias);
-            var id = typeToCheck.Id.ToString(CultureInfo.InvariantCulture);
-            var ids = content.ContentType.Path.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            return IsContentOfType(content, typeToCheck);
+        }
+
+        public virtual bool IsContentTypeOfType(IContentType contentType, int ofTypeContentTypeId)
+        {
+            var id = ofTypeContentTypeId.ToString(CultureInfo.InvariantCulture);
+            var ids = contentType.Path.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
             var result = ids.Contains(id);
             return result;
+        }
+
+        public virtual bool IsContentOfType(IContent content, IContentType contentType)
+        {
+            return IsContentOfType(content, contentType.Id);
+        }
+
+        public virtual bool IsContentOfType(IContent content, int contentTypeId)
+        {
+            return IsContentTypeOfType(content.ContentType, contentTypeId);
         }
 
         public virtual IContentType GetContentType(string contentTypeAlias)
@@ -57,7 +88,7 @@ namespace uMigrations
             return ContentTypeService.GetContentType(contentTypeAlias);
         }
 
-        public void UpdateContent(IContent content)
+        public virtual void UpdateContent(IContent content)
         {
             if (content.Published)
             {
@@ -82,6 +113,20 @@ namespace uMigrations
         public virtual void RepublishAllContent()
         {
             ContentService.RePublishAll();
+        }
+
+        public virtual List<IContentType> GetContentTypeOrDerivedTypes(IContentType contentType)
+        {
+            var descendants = ContentTypeService.GetAllContentTypes().Where(x => IsContentTypeOfType(x, contentType.Id));
+            var result = descendants.ToList();
+            return result;
+        }
+
+        public virtual List<IContentType> GetDerivedTypes(IContentType contentType)
+        {
+            var descendants = ContentTypeService.GetAllContentTypes().Where(x => x.Alias != contentType.Alias && IsContentTypeOfType(x, contentType.Id));
+            var result = descendants.ToList();
+            return result;
         }
 
         public virtual PropertyType CopyPropertyType(string propertyAlias, PropertyType propertyType)

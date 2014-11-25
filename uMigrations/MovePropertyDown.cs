@@ -60,7 +60,7 @@ namespace uMigrations
             var sourceProperty = ContentMigrationService.GetPropetyType(sourceContentType, propertyAlias);
 
             var propertyToCreateaNewOneFrom = sourceProperty;
-            var newPropertyTempName = GetTempPropertyName(propertyAlias);
+            var newPropertyTempName = GetTempName(propertyAlias);
 
             foreach (var destinationContentType in destinationContentTypes)
             {

@@ -45,9 +45,9 @@ namespace uMigrations
         protected MigrationsSettings MigrationSettings { get; private set; }
         protected ILog Log { get; private set; }
 
-        protected virtual string GetTempPropertyName(string propertyAlias)
+        protected virtual string GetTempName(string alias)
         {
-            var result = propertyAlias + "_" + MigrationSettings.MigrationRuntimeId;
+            var result = alias + "_" + MigrationSettings.MigrationRuntimeId;
             return result;
         }
 
@@ -107,15 +107,7 @@ namespace uMigrations
 
             newProperty.Mandatory = false;
 
-            if (tabName != null)
-            {
-                // todo ? do we need to create a new property group ?
-                contentType.AddPropertyType(newProperty, tabName);
-            }
-            else
-            {
-                contentType.AddPropertyType(newProperty);
-            }
+            contentType.AddPropertyType(newProperty);
 
             ContentMigrationService.UpdateContentType(contentType);
 
@@ -146,7 +138,7 @@ namespace uMigrations
             return property;
         }
 
-        protected bool ValidateContentIsOfType(List<Exception> migrationProblems, IContent content, string contentType)
+        protected bool ValidateContentIsOfType(List<Exception> migrationProblems, IContent content, IContentType contentType)
         {
             if (!ContentMigrationService.IsContentOfType(content, contentType))
             {

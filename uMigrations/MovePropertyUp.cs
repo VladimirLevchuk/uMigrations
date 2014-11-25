@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using log4net;
 using Umbraco.Core.Models;
@@ -25,7 +26,9 @@ namespace uMigrations
         
         protected override List<IContent> GetContentToUpdate()
         {
-            return ContentMigrationService.GetContentOfType(Parameters.DestinationTypeAlias).ToList();
+            var contentType = ContentMigrationService.GetContentType(Parameters.DestinationTypeAlias);
+            var result = ContentMigrationService.GetContentOfTypeOrDerived(contentType);
+            return result;
         }
         
         protected override List<Exception> DoValidate(MovePropertyUpParameters parameters)
@@ -77,28 +80,6 @@ namespace uMigrations
                 }
             }
 
-            //foreach (var content in GetContentToUpdate())
-            //{
-            //    ValidateContentIsOfType(migrationProblems, content, destinationTypeAlias);
-            //    if (!ContentMigrationService.IsContentOfType(content, destinationTypeAlias))
-            //    {
-            //        string message = string.Format("Content item #{0} of type '{1}' is not of type '{2}'", content.Id,
-            //            content.ContentType.Alias, destinationTypeAlias);
-            //        migrationProblems.Add(new InvalidOperationException(message));
-            //    }
-
-            //    if (mandatory && defaultValue == null)
-            //    {
-            //        string message = string.Format("No value for mandatory field '{0}' on content item id #{1}", 
-            //            propertyAlias, content.Id);
-
-            //        if (content.GetValue(propertyAlias) == null)
-            //        {
-            //            migrationProblems.Add(new InvalidOperationException(message));
-            //        }
-            //    }
-            //}
-
             return migrationProblems;
         }
 
@@ -122,12 +103,10 @@ namespace uMigrations
                 throw new InvalidOperationException("No properties to move. ");
             }
 
-            var newPropertyTempName = GetTempPropertyName(propertyAlias);
+            var newPropertyTempName = GetTempName(propertyAlias);
             var newProperty = CreatePropertyType(destinationContentType,
                 tabName, newPropertyTempName, propertyToCreateaNewOneFrom);
 
-            // ContentMigrationService.RepublishAllContent();
-            // ContentMigrationService.RepublishAllContent();
             UpdateContent(newPropertyTempName, propertyAlias, mandatory, defaultValue);
             
             if (mandatory)
@@ -138,32 +117,82 @@ namespace uMigrations
             RenameProperty(destinationContentType, newProperty, propertyAlias);
 
             RemoveProperties(sourceContentTypes, propertyAlias);
-            // ContentMigrationService.RepublishAllContent();
+
+            ProcessTab(destinationTypeAlias, propertyAlias, tabName);
         }
 
-        //private PropertyType CreateDestinationPropertyType(
-        //    IContentType destinationContentType,
-        //    string tabName,
-        //    string propertyAlias, 
-        //    PropertyType propertyToCreateANewOneFrom)
-        //{
-        //    var newProperty = ContentMigrationService.CopyPropertyType(propertyAlias, propertyToCreateANewOneFrom);
-            
-        //    newProperty.Mandatory = false;
+        private void ProcessTab(string contentTypeAlias, string propertyAlias, string tabName)
+        {
+            var contentType = ContentMigrationService.GetContentType(contentTypeAlias);
+            var property = ContentMigrationService.GetPropetyType(contentType, propertyAlias);
+            ProcessTab(contentType, property, tabName);
+        }
 
-        //    if (tabName != null)
-        //    {
-        //        // todo ? do we need to create a new property group ?
-        //        destinationContentType.AddPropertyType(newProperty, tabName);
-        //    }
-        //    else
-        //    {
-        //        destinationContentType.AddPropertyType(newProperty);
-        //    }
+        private void ProcessTab(IContentType contentType, PropertyType property, string tabName)
+        {
+            // if tab exists
+            if (contentType.PropertyGroups.Contains(tabName))
+            {
+                contentType.MovePropertyType(property.Alias, tabName);
+            }
+            // if tab is not exists yet
+            else
+            {
+                var derivedTypes = ContentMigrationService.GetDerivedTypes(contentType);
+                var derivedTypesToProcess = derivedTypes.Where(x => x.PropertyGroups.Contains(tabName)).ToList();
 
-        //    ContentMigrationService.UpdateContentType(destinationContentType);
+                // if tab exists in any of derived types
+                if (derivedTypesToProcess.Count > 0)
+                {
+                    // create a new tab with temp name
+                    var tempTabName = GetTempName(tabName);
+                    contentType.AddPropertyGroup(tempTabName);
+                    ContentMigrationService.UpdateContentType(contentType);
 
-        //    return newProperty;
-        //}
+                    // foreach derived type:
+                    foreach (var derivedType in derivedTypesToProcess)
+                    {
+                        // move all properties from existing tab to a newly created
+                        var tabProperties = derivedType.PropertyGroups[tabName].PropertyTypes.Select(x => x.Alias);
+                        foreach (var tabProperty in tabProperties)
+                        {
+                            var moved = derivedType.MovePropertyType(tabProperty, tempTabName);
+                            Debug.Assert(moved, "Add logging and exception");
+                            ContentMigrationService.UpdateContentType(derivedType);
+                        }
+                    }
+
+                    // foreach derived type: 
+                    foreach (var derivedType in derivedTypesToProcess)
+                    {
+                        // remove all existing tabs (with no properties)
+                        derivedType.RemovePropertyGroup(tabName);
+                        ContentMigrationService.UpdateContentType(derivedType);
+                    }
+
+                    // rename tab to target name                
+                    var tab = contentType.PropertyGroups[tempTabName];
+                    tab.Name = tabName;
+                    ContentMigrationService.UpdateContentType(contentType);
+                }
+                // otherwise we need to create a new tab and move property there
+                else
+                {
+                    var propertyGroupCreated = contentType.AddPropertyGroup(tabName);
+                    var propertyMoved = contentType.MovePropertyType(property.Alias, tabName);
+                    ContentMigrationService.UpdateContentType(contentType);
+
+                    if (!propertyGroupCreated || !propertyMoved)
+                    {
+                        var message = string.Format("Unable to move property '{0}' of content type '{1}' to tab '{2}'. Tab Created: {3}, Property Moved: {4}",
+                            property.Alias, contentType.Alias, tabName, propertyGroupCreated, propertyMoved);
+
+                        Log.Warn(message);
+
+                        throw new InvalidOperationException(message);
+                    }
+                }
+            }
+        }
     }
 }

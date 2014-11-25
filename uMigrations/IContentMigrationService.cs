@@ -8,7 +8,7 @@ namespace uMigrations
         List<IContent> GetContentOfType(string contentTypeAlias);
         List<IContent> GetContentOfTypes(IEnumerable<string> contentTypeAliases);
 
-        bool IsContentOfType(IContent content, string contentTypeAlias);
+        bool IsContentOfType(IContent content, IContentType contentTypeAlias);
         IContentType GetContentType(string contentTypeAlias);
         void UpdateContent(IContent content);
         void UpdateContentType(IContentType contentTypes);
@@ -17,5 +17,9 @@ namespace uMigrations
         void RenameProperty(PropertyType propertyType, string newAlias);
         PropertyType GetPropetyType(IContentType contentType, string alias);
         void RepublishAllContent();
+        List<IContentType> GetDerivedTypes(IContentType contentType);
+        List<IContent> GetContentOfTypes(IEnumerable<IContentType> contentTypes);
+        List<IContent> GetContentOfTypeOrDerived(IContentType contentType);
+        List<IContentType> GetContentTypeOrDerivedTypes(IContentType contentType);
     }
 }
