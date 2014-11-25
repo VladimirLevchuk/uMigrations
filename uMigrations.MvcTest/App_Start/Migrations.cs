@@ -6,7 +6,7 @@ namespace uMigrations.MvcTest
     {
         public static void Run()
         {
-            MigrationContext.Current.Runner.Remove(new CustomMigration(new TestMigrationStep()));
+            MigrationContext.Current.Runner.Apply(new CustomMigration(new TestMigrationStep()));
         }
     }
 
