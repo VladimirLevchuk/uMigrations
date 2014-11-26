@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using log4net;
 using Umbraco.Core;
 using Umbraco.Core.Persistence;
+using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
 
 namespace uMigrations
@@ -25,6 +27,7 @@ namespace uMigrations
             ContentMigrationService = contentMigrationService;
             TransactionProvider = transactionProvider;
             Api = api;
+
             LogFactoryMethod = logFactoryMethod;
         }
 
@@ -35,9 +38,17 @@ namespace uMigrations
             var migrationSettings = new MigrationsSettings();
 
             var repositoryFactory = new RepositoryFactory(disableAllCache: true);
-            var contentService = new ContentService(repositoryFactory);
-            var contentTypeService = new ContentTypeService(repositoryFactory, contentService, new MediaService(repositoryFactory));
-            var dataTypeService = new DataTypeService(repositoryFactory);
+            
+            var unitOfWorkProvider = new PetaPocoUnitOfWorkProvider();
+            using (var uow = unitOfWorkProvider.GetUnitOfWork())
+            {
+                Debug.Assert(uow.Database == dbContext.Database,
+                    "Nested Transactions work only when all operations use the same Database instace. ");
+            }
+
+            var contentService = new ContentService(unitOfWorkProvider, repositoryFactory);
+            var contentTypeService = new ContentTypeService(unitOfWorkProvider, repositoryFactory, contentService, new MediaService(repositoryFactory));
+            var dataTypeService = new DataTypeService(unitOfWorkProvider, repositoryFactory);
 
             var contentMigrationService = new ContentMigrationService(contentTypeService,
                 contentService, dataTypeService, migrationSettings);
