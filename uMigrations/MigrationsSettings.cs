@@ -17,6 +17,11 @@ namespace uMigrations
             get { return GetBooleanAppSetting("uMigrations.Skip", false); }
         }
 
+        public virtual bool EmulateMigrations
+        {
+            get { return GetBooleanAppSetting("uMigrations.Emulate", false); }
+        }
+
         public virtual string MigrationRuntimeId
         {
             get { return _migrationRuntimeId.Value; }

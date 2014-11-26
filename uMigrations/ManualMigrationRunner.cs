@@ -35,7 +35,8 @@ namespace uMigrations
 
         public virtual void Run(IMigration migration, Func<IMigrationStep, IEnumerable<IMigrationAction>> migrationDirection)
         {
-            if (MigrationContext.Current.MigrationSettings.SkipMigrations)
+            var migrationSettings = MigrationContext.Current.MigrationSettings;
+            if (migrationSettings.SkipMigrations)
             {
                 return;
             }
@@ -79,9 +80,14 @@ namespace uMigrations
                         }
                     }
 
-                    ContentMigrationService.RepublishAllContent();
-                    
-                    tran.Commit();
+                    if (migrationSettings.EmulateMigrations)
+                    {
+                        tran.Rollback();
+                    }
+                    else
+                    {
+                        tran.Commit();
+                    }
                 }
                 catch (Exception error)
                 {
@@ -89,6 +95,8 @@ namespace uMigrations
                     Log.Error(error);
                     throw;
                 }
+
+                ContentMigrationService.RepublishAllContent();
             }
         }
     }
