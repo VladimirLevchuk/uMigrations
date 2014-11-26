@@ -133,7 +133,17 @@ namespace uMigrations
             // if tab exists
             if (contentType.PropertyGroups.Contains(tabName))
             {
-                contentType.MovePropertyType(property.Alias, tabName);
+                if (!contentType.MovePropertyType(property.Alias, tabName))
+                {
+                    var message = string.Format("Unable to move property '{0}' of content type '{1}' to tab '{2}'. Tab Created: {3}, Property Moved: {4}",
+                        property.Alias, contentType.Alias, tabName);
+
+                    Log.Error(message);
+
+                    throw new InvalidOperationException(message);                    
+                }
+                
+                ContentMigrationService.UpdateContentType(contentType);
             }
             // if tab is not exists yet
             else
@@ -157,7 +167,15 @@ namespace uMigrations
                         foreach (var tabProperty in tabProperties)
                         {
                             var moved = derivedType.MovePropertyType(tabProperty, tempTabName);
-                            Debug.Assert(moved, "Add logging and exception");
+                            if (!moved)
+                            {
+                                var message = string.Format("Unable to move property '{0}' of content type '{1}' to tab '{2}'",
+                                    tabProperty, derivedType.Alias, tempTabName);
+
+                                Log.Error(message);
+
+                                throw new InvalidOperationException(message);    
+                            }
                             ContentMigrationService.UpdateContentType(derivedType);
                         }
                     }
@@ -187,7 +205,7 @@ namespace uMigrations
                         var message = string.Format("Unable to move property '{0}' of content type '{1}' to tab '{2}'. Tab Created: {3}, Property Moved: {4}",
                             property.Alias, contentType.Alias, tabName, propertyGroupCreated, propertyMoved);
 
-                        Log.Warn(message);
+                        Log.Error(message);
 
                         throw new InvalidOperationException(message);
                     }
