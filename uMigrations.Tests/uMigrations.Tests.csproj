@@ -234,7 +234,29 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="config\404handlers.config" />
+    <None Include="config\applications.config" />
+    <None Include="config\BaseRestExtensions.config" />
+    <None Include="config\ClientDependency.config" />
+    <None Include="config\Dashboard.config" />
+    <None Include="config\EmbeddedMedia.config" />
+    <None Include="config\ExamineIndex.config" />
+    <None Include="config\ExamineSettings.config" />
+    <None Include="config\feedProxy.config" />
+    <None Include="config\FileSystemProviders.config" />
+    <None Include="config\log4net.config" />
+    <None Include="config\metablogConfig.config" />
+    <None Include="config\scripting.config" />
+    <None Include="config\tinyMceConfig.config" />
+    <None Include="config\trees.config" />
+    <None Include="config\umbracoSettings.config" />
+    <None Include="config\UrlRewriting.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Data\foo.txt" />
+    <Content Include="App_Plugins\foo.txt" />
+    <Content Include="media\foo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
