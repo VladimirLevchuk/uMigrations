@@ -3,6 +3,29 @@ using System.Collections.Generic;
 
 namespace uMigrations
 {
+    public interface INoValueAnalyzer
+    {
+        bool NoValue(object value);
+    }
+
+    public class DefaultNoValueAnalyzer : INoValueAnalyzer
+    {
+        public bool NoValue(object value)
+        {
+            return value == null;
+        }
+    }
+
+    public class NoValueWhenNullOrEmpty : INoValueAnalyzer
+    {
+        public bool NoValue(object value)
+        {
+            var stringValue = (string) value;
+
+            return string.IsNullOrEmpty(stringValue);
+        }
+    }
+
     public static class MovePropertyUpFluentExtensions
     {
         public class MovePropertyToBaseTypeClause
@@ -13,6 +36,7 @@ namespace uMigrations
             public bool IsDefaultSet { get; set; }
             public bool IsMandatory { get; set; }
             public string TabName { get; set; }
+            public INoValueAnalyzer NoValueAnalyzer { get; set; }
 
             public MovePropertyToBaseTypeClause(FluentExtensions.MovePropertyClause movePropertyClause, 
                 string destinationContentType)
@@ -31,6 +55,14 @@ namespace uMigrations
             {
                 DefaultValue = value;
                 IsDefaultSet = true;
+                return this;
+            }
+
+            public MovePropertyToBaseTypeClause WithDefault(object value, INoValueAnalyzer noValueAnalyzer)
+            {
+                DefaultValue = value;
+                IsDefaultSet = true;
+                NoValueAnalyzer = noValueAnalyzer;
                 return this;
             }
 

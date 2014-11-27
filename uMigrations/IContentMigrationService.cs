@@ -21,5 +21,6 @@ namespace uMigrations
         List<IContent> GetContentOfTypes(IEnumerable<IContentType> contentTypes);
         List<IContent> GetContentOfTypeOrDerived(IContentType contentType);
         List<IContentType> GetContentTypeOrDerivedTypes(IContentType contentType);
+        IContent GetContentById(int id);
     }
 }

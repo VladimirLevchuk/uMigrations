@@ -16,7 +16,7 @@ namespace uMigrations.MvcTest
     {
         protected override void Apply(FluentMigrationStepDefinition migration)
         {
-            migration.MoveProperty("level2Prop2").ToBaseType("Level1").ToTab("TestTab").FromTypes("Level2");
+            migration.MoveProperty("level2Prop2").ToBaseType("Level1").ToTab("TestTab").WithDefault("default", new NoValueWhenNullOrEmpty()).FromTypes("Level2");
             migration.MoveProperty("moveToBase").ToBaseType("Level11").ToTab("TestTab").FromTypes("Level21", "Level22");
             migration.MoveProperty("moveToBase2").ToBaseType("Level11").ToTab("TestTab").Mandatory().WithDefault("default").FromTypes("Level21", "Level22");
         }

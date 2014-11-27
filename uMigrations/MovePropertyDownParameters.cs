@@ -3,6 +3,11 @@ using System.Linq;
 
 namespace uMigrations
 {
+    public interface INoValueAnalyzerProvider
+    {
+        INoValueAnalyzer NoValueAnalyzer { get; }
+    }
+
     public class MovePropertyDownParameters
     {
         public MovePropertyDownParameters(string sourceTypeAlias, 
@@ -10,8 +15,10 @@ namespace uMigrations
             string propertyAlias,
             string tabName = null,
             bool mandatory = false,
-            object defaultValue = null)
+            object defaultValue = null, 
+            INoValueAnalyzer noValueAnalyzer = null)
         {
+            NoValueAnalyzer = noValueAnalyzer ?? new DefaultNoValueAnalyzer();
             DefaultValue = defaultValue;
             TabName = tabName;
             Mandatory = mandatory;
@@ -26,6 +33,7 @@ namespace uMigrations
         public string TabName { get; private set; }
         public bool Mandatory { get; private set; }
         public object DefaultValue { get; private set; }
+        public INoValueAnalyzer NoValueAnalyzer { get; private set; }
 
         public override string ToString()
         {

@@ -122,6 +122,12 @@ namespace uMigrations
             return result;
         }
 
+        public virtual IContent GetContentById(int id)
+        {
+            var result = ContentService.GetById(id);
+            return result;
+        }
+
         public virtual List<IContentType> GetDerivedTypes(IContentType contentType)
         {
             var descendants = ContentTypeService.GetAllContentTypes().Where(x => x.Alias != contentType.Alias && IsContentTypeOfType(x, contentType.Id));

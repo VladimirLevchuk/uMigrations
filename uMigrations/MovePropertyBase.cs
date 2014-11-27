@@ -5,8 +5,11 @@ using Umbraco.Core.Models;
 
 namespace uMigrations
 {
-    public abstract class MovePropertyBase<TParameters> : IMigrationAction
+    public abstract class MovePropertyBase<TParameters> : IMigrationAction, INoValueAnalyzer
     {
+        private readonly List<int> _updatedContent = new List<int>();
+        private readonly Lazy<INoValueAnalyzer> _noValueAnalyzer;
+
         protected MovePropertyBase(TParameters parameters,
             IMigrationSettings migrationSettings,
             IContentMigrationService contentMigrationService,
@@ -16,6 +19,7 @@ namespace uMigrations
             MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
             Log = log;
+            _noValueAnalyzer = new Lazy<INoValueAnalyzer>(GetNoValueAnalyzer);
         }
 
         public virtual List<Exception> Validate()
@@ -51,6 +55,11 @@ namespace uMigrations
         protected abstract void DoRun(TParameters parameters);
         protected abstract List<IContent> GetContentToUpdate();
 
+        protected virtual List<int> UpdatedContent
+        {
+            get { return _updatedContent; }
+        }
+
         protected IContentMigrationService ContentMigrationService { get; private set; }
         protected IMigrationSettings MigrationSettings { get; private set; }
         protected ILog Log { get; private set; }
@@ -84,11 +93,25 @@ namespace uMigrations
            ContentMigrationService.UpdateContentType(contentType);
         }
 
+        public virtual bool NoValue(object value)
+        {
+            return _noValueAnalyzer.Value.NoValue(value);
+        }
+
+        private INoValueAnalyzer GetNoValueAnalyzer()
+        {
+            var provider = Parameters as INoValueAnalyzerProvider;
+            var result = (provider != null ? provider.NoValueAnalyzer : null) ?? new DefaultNoValueAnalyzer();
+            return result;
+        }
+
         protected void UpdateContent(string setPropertyAlias, string getPropertyAlias, bool mandatory, object defaultValue)
         {
-            // ContentMigrationService.RepublishAllContent();
-            // todo: use parallel execution here
-            foreach (var content in GetContentToUpdate())
+            var contentToUpdate = GetContentToUpdate();
+            
+            UpdatedContent.Clear();
+
+            foreach (var content in contentToUpdate)
             {
                 object value = null;
                 if (content.HasProperty(getPropertyAlias))
@@ -96,7 +119,7 @@ namespace uMigrations
                     value = content.GetValue(getPropertyAlias);
                 }
                 
-                if (value == null /* && mandatory */ && defaultValue != null)
+                if (defaultValue != null && NoValue(value))
                 {
                     value = defaultValue;
                 }
@@ -104,6 +127,11 @@ namespace uMigrations
                 content.SetValue(setPropertyAlias, value);
 
                 ContentMigrationService.UpdateContent(content);
+
+                // invalidate cmsPropeprtyData cache to fix strange errors
+                ContentMigrationService.GetContentById(content.Id);
+
+                UpdatedContent.Add(content.Id);
             }
         }
 
