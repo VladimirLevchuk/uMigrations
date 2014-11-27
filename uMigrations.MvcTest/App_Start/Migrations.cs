@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using log4net;
 using Umbraco.Core;
-using Umbraco.Core.Persistence.Migrations;
-using Umbraco.Core.Services;
+using uMigrations.Persistance;
 
 namespace uMigrations.MvcTest
 {
@@ -13,30 +8,24 @@ namespace uMigrations.MvcTest
     {
         public static void Run()
         {
-            if (MigrationContext.Current.MigrationSettings.SkipMigrations)
-            {
-                return;
-            }
-
-            using (var tran = MigrationContext.Current.TransactionProvider.BeginTransaction())
-            {
-                new TestMigration().Up();
-                tran.Commit();
-            }
+            MigrationContext.Current.Runner.Apply(new CustomMigration(new TestMigrationStep()));
         }
     }
 
-    public class TestMigration : IMigration
+    public class TestMigrationStep : MigrationStepBase
     {
-        public virtual void Up()
+        protected override void Apply(FluentMigrationStepDefinition migration)
         {
-            // MigrationContext.Current.Api.MoveProperty("SecondLevelDT2", "FirstLevelDT", "property1");
-            MigrationContext.Current.Api.MovePropertyUp("Level2", "Level1", "level2Prop2");
+            migration.MoveProperty("level2Prop2").ToBaseType("Level1").ToTab("TestTab").FromTypes("Level2");
+            migration.MoveProperty("moveToBase").ToBaseType("Level11").ToTab("TestTab").FromTypes("Level21", "Level22");
+            migration.MoveProperty("moveToBase2").ToBaseType("Level11").ToTab("TestTab").Mandatory().WithDefault("default").FromTypes("Level21", "Level22");
         }
 
-        public virtual void Down()
-        {
-            MigrationContext.Current.Api.MovePropertyUp("Level1", "Level2", "level2Prop2");
-        }
+        //protected override void Apply(FluentMigrationStepDefinition migration)
+        //{
+        //    migration.MoveProperty("level2Prop2").ToDerivedTypes("Level2").FromType("Level1");
+        //    migration.MoveProperty("moveToBase").ToDerivedTypes("Level21", "Level22").FromType("Level11");
+        //    migration.MoveProperty("moveToBase2").ToDerivedTypes("Level21", "Level22").Mandatory().FromType("Level11");
+        //}
     }
 }

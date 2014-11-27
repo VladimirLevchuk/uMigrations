@@ -1,43 +1,78 @@
 using System;
+using System.Diagnostics;
 using log4net;
 using Umbraco.Core;
+using Umbraco.Core.Persistence;
+using Umbraco.Core.Persistence.UnitOfWork;
+using Umbraco.Core.Services;
+using uMigrations.Persistance;
 
 namespace uMigrations
 {
     public class MigrationContext
     {
-        public virtual MigrationsSettings MigrationSettings { get; private set; }
+        public virtual IMigrationSettings MigrationSettings { get; private set; }
         public virtual IContentMigrationService ContentMigrationService { get; private set; }
         public virtual IMigrationTransactionProvider TransactionProvider { get; private set; }
-        public virtual IMigrationsApi Api { get; private set; }
         public virtual Func<Type, ILog> LogFactoryMethod { get; private set; }
+        public virtual IMigrationRunner Runner { get; private set; }
 
-        public static MigrationContext Current = CreateDefaultContext();
-
-        public MigrationContext(MigrationsSettings migrationSettings, IContentMigrationService contentMigrationService, IMigrationTransactionProvider transactionProvider, IMigrationsApi api, Func<Type, ILog> logFactoryMethod)
+        public static MigrationContext Current
         {
+            get { return _customContext ?? _currentContext.Value; }
+            set { _customContext = value; }
+        }
+
+        private static MigrationContext _customContext = null;
+        private static readonly Lazy<MigrationContext> _currentContext = new Lazy<MigrationContext>(CreateDefaultContext);
+
+        public MigrationContext(IMigrationSettings migrationSettings, 
+            IContentMigrationService contentMigrationService, 
+            IMigrationTransactionProvider transactionProvider, 
+            Func<Type, ILog> logFactoryMethod, 
+            IMigrationRunner runner)
+        {
+            Runner = runner;
             MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
             TransactionProvider = transactionProvider;
-            Api = api;
+
             LogFactoryMethod = logFactoryMethod;
         }
 
         static MigrationContext CreateDefaultContext()
         {
             var dbContext = ApplicationContext.Current.DatabaseContext;
-            var services = ApplicationContext.Current.Services;
             var migrationSettings = new MigrationsSettings();
 
-            var contentMigrationService = new ContentMigrationService(services.ContentTypeService,
-                services.ContentService, migrationSettings);
+            var repositoryFactory = new RepositoryFactory(disableAllCache: true);
+            
+            var unitOfWorkProvider = new PetaPocoUnitOfWorkProvider();
+            using (var uow = unitOfWorkProvider.GetUnitOfWork())
+            {
+                Debug.Assert(uow.Database == dbContext.Database,
+                    "Nested Transactions work only when all operations use the same Database instace. ");
+            }
+
+            var contentService = new ContentService(unitOfWorkProvider, repositoryFactory);
+            var contentTypeService = new ContentTypeService(unitOfWorkProvider, repositoryFactory, contentService, new MediaService(repositoryFactory));
+            var dataTypeService = new DataTypeService(unitOfWorkProvider, repositoryFactory);
+
+            var contentMigrationService = new ContentMigrationService(contentTypeService,
+                contentService, dataTypeService, migrationSettings);
             var transactionProvider = new MigrationTransactionProvider(dbContext);
             Func<Type, ILog> logFactoryMethod = LogManager.GetLogger;
 
-            var api = new MigrationsApi(contentMigrationService, transactionProvider,
-                logFactoryMethod(typeof (MigrationsApi)));
+            // add migration info to db if needed
+            PetaPocoMigrationInfoRepository.AppStart(dbContext.Database);
 
-            var result = new MigrationContext(migrationSettings, contentMigrationService, transactionProvider, api, logFactoryMethod);
+            var migrationInfoRepository = new PetaPocoMigrationInfoRepository(dbContext.Database);
+
+            var runner = new ManualMigrationRunner(logFactoryMethod(typeof(ManualMigrationRunner)), transactionProvider, contentMigrationService,
+                migrationInfoRepository, migrationSettings);
+
+            var result = new MigrationContext(migrationSettings, 
+                contentMigrationService, transactionProvider, logFactoryMethod, runner);
             return result;
         }
     }

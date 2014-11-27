@@ -23,7 +23,6 @@ namespace uMigrations
             Context = context;
         }
 
-
         public virtual IMigrationTransaction BeginTransaction()
         {
             var result = new MigrationTransaction(Context.Database.GetTransaction());
