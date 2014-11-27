@@ -5,28 +5,37 @@ using Umbraco.Core;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
+using uMigrations.Persistance;
 
 namespace uMigrations
 {
     public class MigrationContext
     {
-        public virtual MigrationsSettings MigrationSettings { get; private set; }
+        public virtual IMigrationSettings MigrationSettings { get; private set; }
         public virtual IContentMigrationService ContentMigrationService { get; private set; }
         public virtual IMigrationTransactionProvider TransactionProvider { get; private set; }
-        public virtual IMigrationsApi Api { get; private set; }
         public virtual Func<Type, ILog> LogFactoryMethod { get; private set; }
-        // public virtual IMigrationProvider MigrationProvider { get; private set; }
         public virtual IMigrationRunner Runner { get; private set; }
 
-        public static MigrationContext Current = CreateDefaultContext();
+        public static MigrationContext Current
+        {
+            get { return _customContext ?? _currentContext.Value; }
+            set { _customContext = value; }
+        }
 
-        public MigrationContext(MigrationsSettings migrationSettings, IContentMigrationService contentMigrationService, IMigrationTransactionProvider transactionProvider, IMigrationsApi api, Func<Type, ILog> logFactoryMethod, IMigrationRunner runner)
+        private static MigrationContext _customContext = null;
+        private static readonly Lazy<MigrationContext> _currentContext = new Lazy<MigrationContext>(CreateDefaultContext);
+
+        public MigrationContext(IMigrationSettings migrationSettings, 
+            IContentMigrationService contentMigrationService, 
+            IMigrationTransactionProvider transactionProvider, 
+            Func<Type, ILog> logFactoryMethod, 
+            IMigrationRunner runner)
         {
             Runner = runner;
             MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
             TransactionProvider = transactionProvider;
-            Api = api;
 
             LogFactoryMethod = logFactoryMethod;
         }
@@ -34,7 +43,6 @@ namespace uMigrations
         static MigrationContext CreateDefaultContext()
         {
             var dbContext = ApplicationContext.Current.DatabaseContext;
-            // var services = ApplicationContext.Current.Services;
             var migrationSettings = new MigrationsSettings();
 
             var repositoryFactory = new RepositoryFactory(disableAllCache: true);
@@ -55,12 +63,16 @@ namespace uMigrations
             var transactionProvider = new MigrationTransactionProvider(dbContext);
             Func<Type, ILog> logFactoryMethod = LogManager.GetLogger;
 
-            var runner = new ManualMigrationRunner(logFactoryMethod(typeof(MigrationsApi)), transactionProvider, contentMigrationService);
-            //var api = new MigrationsApi(contentMigrationService, transactionProvider,
-            //    logFactoryMethod(typeof (MigrationsApi)));
+            // add migration info to db if needed
+            PetaPocoMigrationInfoRepository.AppStart(dbContext.Database);
+
+            var migrationInfoRepository = new PetaPocoMigrationInfoRepository(dbContext.Database);
+
+            var runner = new ManualMigrationRunner(logFactoryMethod(typeof(ManualMigrationRunner)), transactionProvider, contentMigrationService,
+                migrationInfoRepository, migrationSettings);
 
             var result = new MigrationContext(migrationSettings, 
-                contentMigrationService, transactionProvider, null, logFactoryMethod, runner);
+                contentMigrationService, transactionProvider, logFactoryMethod, runner);
             return result;
         }
     }

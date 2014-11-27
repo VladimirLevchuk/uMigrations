@@ -8,5 +8,6 @@ namespace uMigrations
         string ToString();
         List<Exception> Validate();
         void Run();
+        bool IsApplicable { get; }
     }
 }

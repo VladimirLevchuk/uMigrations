@@ -8,7 +8,7 @@ namespace uMigrations
     public abstract class MovePropertyBase<TParameters> : IMigrationAction
     {
         protected MovePropertyBase(TParameters parameters,
-            MigrationsSettings migrationSettings,
+            IMigrationSettings migrationSettings,
             IContentMigrationService contentMigrationService,
             ILog log)
         {
@@ -28,6 +28,16 @@ namespace uMigrations
             DoRun(Parameters);
         }
 
+        public virtual bool IsApplicable
+        {
+            get
+            {
+                // todo: refactor not to call DoValidate twice
+                var errors = DoValidate(Parameters);
+                return errors.Count == 0;
+            }
+        }
+
         public TParameters Parameters { get; private set; }
 
         public abstract string ActionName { get; }
@@ -42,7 +52,7 @@ namespace uMigrations
         protected abstract List<IContent> GetContentToUpdate();
 
         protected IContentMigrationService ContentMigrationService { get; private set; }
-        protected MigrationsSettings MigrationSettings { get; private set; }
+        protected IMigrationSettings MigrationSettings { get; private set; }
         protected ILog Log { get; private set; }
 
         protected virtual string GetTempName(string alias)

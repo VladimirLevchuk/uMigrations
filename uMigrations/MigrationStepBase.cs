@@ -1,26 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace uMigrations
 {
     public abstract class MigrationStepBase : IMigrationStep
     {
-        private readonly Lazy<IEnumerable<IMigrationAction>> _upgradeActions;
-        private readonly Lazy<IEnumerable<IMigrationAction>> _downgradeActions;
+        private readonly Lazy<IEnumerable<IMigrationAction>> _applyActions;
 
         protected MigrationStepBase()
         {
-            _upgradeActions = new Lazy<IEnumerable<IMigrationAction>>(() =>
+            _applyActions = new Lazy<IEnumerable<IMigrationAction>>(() =>
             {
                 var migrationDefinition = new FluentMigrationStepDefinition();
                 Apply(migrationDefinition);
-                return migrationDefinition.GetActions();
-            });
-
-            _downgradeActions = new Lazy<IEnumerable<IMigrationAction>>(() =>
-            {
-                var migrationDefinition = new FluentMigrationStepDefinition();
-                Remove(migrationDefinition);
                 return migrationDefinition.GetActions();
             });
         }
@@ -30,18 +23,20 @@ namespace uMigrations
             get { return GetType().FullName; }
         }
 
-        public virtual IEnumerable<IMigrationAction> ApplyActions
+        public virtual bool IsApplicable
         {
-            get { return _upgradeActions.Value; }
+            get
+            {
+                var result = ApplyActions.All(x => x.IsApplicable);
+                return result;
+            }
         }
 
-        public virtual IEnumerable<IMigrationAction> RemoveActions
+        public virtual IEnumerable<IMigrationAction> ApplyActions
         {
-            get { return _downgradeActions.Value; }
+            get { return _applyActions.Value; }
         }
 
         protected abstract void Apply(FluentMigrationStepDefinition migration);
-
-        protected abstract void Remove(FluentMigrationStepDefinition migration);
     }
 }

@@ -6,8 +6,8 @@ namespace uMigrations
     {
         string Name { get; }
 
-        IEnumerable<IMigrationAction> ApplyActions { get; }
+        bool IsApplicable { get; }
 
-        IEnumerable<IMigrationAction> RemoveActions { get; }
+        IEnumerable<IMigrationAction> ApplyActions { get; }
     }
 }

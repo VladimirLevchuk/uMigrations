@@ -14,8 +14,8 @@ namespace uMigrations
         }
 
         public MovePropertyDown(
-            MovePropertyDownParameters parameters, 
-            MigrationsSettings migrationSettings,
+            MovePropertyDownParameters parameters,
+            IMigrationSettings migrationSettings,
             IContentMigrationService contentMigrationService, 
             ILog log) : base(parameters, migrationSettings, contentMigrationService, log)
         {}

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using log4net;
+using Umbraco.Core;
+using Umbraco.Core.Persistence;
+using uMigrations.Persistance;
 
 namespace uMigrations
 {
@@ -9,31 +12,29 @@ namespace uMigrations
     {
         protected IMigrationTransactionProvider MigrationTransactionProvider { get; private set; }
         protected IContentMigrationService ContentMigrationService { get; private set; }
+        protected IMigrationInfoRepository MigrationInfoRepository { get; private set; }
+        protected IMigrationSettings MigrationSettings { get; private set; }
         protected ILog Log { get; private set; }
 
-        public ManualMigrationRunner(ILog log, IMigrationTransactionProvider migrationTransactionProvider, IContentMigrationService contentMigrationService)
+        protected Database Db // todo: use injection
         {
+            get { return ApplicationContext.Current.DatabaseContext.Database; }
+        }
+
+        public ManualMigrationRunner(ILog log, 
+            IMigrationTransactionProvider migrationTransactionProvider, 
+            IContentMigrationService contentMigrationService,
+            IMigrationInfoRepository migrationInfoRepository,
+            IMigrationSettings migrationSettings)
+        {
+            MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
+            MigrationInfoRepository = migrationInfoRepository;
             Log = log;
             MigrationTransactionProvider = migrationTransactionProvider;
         }
 
-        public virtual bool IsMigrationApplied(IMigration migration)
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual void Apply(IMigration migration)
-        {
-            Run(migration, x => x.ApplyActions);
-        }
-
-        public virtual void Remove(IMigration migration)
-        {
-            Run(migration, x => x.RemoveActions);
-        }
-
-        public virtual void Run(IMigration migration, Func<IMigrationStep, IEnumerable<IMigrationAction>> migrationDirection)
         {
             var migrationSettings = MigrationContext.Current.MigrationSettings;
             if (migrationSettings.SkipMigrations)
@@ -43,25 +44,9 @@ namespace uMigrations
 
             using (var tran = MigrationContext.Current.TransactionProvider.BeginTransaction())
             {
-                var steps = migration.MigrationSteps;
+                var steps = migration.MigrationSteps.Where(x => IsMigrationStepApplied(x) == false).ToList();
 
-                var problems = new List<Exception>();
-
-                foreach (var step in steps)
-                {
-                    foreach (var migrationAction in migrationDirection(step))
-                    {
-                        var migrationProblems = migrationAction.Validate();
-
-                        if (migrationProblems.Count > 0)
-                        {
-                            var message = string.Format("Migration error. Step: '{0}', Action: '{1}'", 
-                                step, migrationAction); 
-
-                            problems.Add(new AggregateException(message, migrationProblems));
-                        }
-                    }
-                }
+                var problems = Verify(steps);
 
                 if (problems.Any())
                 {
@@ -71,13 +56,14 @@ namespace uMigrations
 
                 try
                 {
-                    // steps.SelectMany(migrationDirection).ToList().ForEach(x => x.Run());
                     foreach (var step in steps)
                     {
-                        foreach (var migrationAction in migrationDirection(step))
+                        foreach (var migrationAction in step.ApplyActions)
                         {
                             migrationAction.Run();
                         }
+
+                        PersistMigrationStepAppliedInformation(step);
                     }
 
                     if (migrationSettings.EmulateMigrations)
@@ -98,6 +84,53 @@ namespace uMigrations
 
                 ContentMigrationService.RepublishAllContent();
             }
+        }
+
+        public virtual bool IsMigrationStepApplied(IMigrationStep step)
+        {
+            var appliedMigrationStep = MigrationInfoRepository.SingleOrDefault(step.Name);
+            var result = appliedMigrationStep != null;
+            return result;
+        }
+           
+        private void PersistMigrationStepAppliedInformation(IMigrationStep step)
+        {
+            var info = new MigrationInfo
+            {
+                MigrationStepName = step.Name,
+                Applied = DateTime.UtcNow,
+                Suffix = MigrationSettings.MigrationRuntimeId
+            };
+
+            MigrationInfoRepository.Insert(info);
+        }
+
+        protected virtual List<Exception> Verify(List<IMigrationStep> steps)
+        {
+            var result = new List<Exception>();
+
+            foreach (var step in steps)
+            {
+                if (IsMigrationStepApplied(step) /*|| !step.IsApplicable*/)
+                {
+                    continue;
+                }
+
+                foreach (var migrationAction in step.ApplyActions)
+                {
+                    var migrationProblems = migrationAction.Validate();
+
+                    if (migrationProblems.Count > 0)
+                    {
+                        var message = string.Format("Migration error. Step: '{0}', Action: '{1}'",
+                            step, migrationAction);
+
+                        result.Add(new AggregateException(message, migrationProblems));
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

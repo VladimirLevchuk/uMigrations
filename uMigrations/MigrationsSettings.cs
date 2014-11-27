@@ -3,7 +3,15 @@ using System.Configuration;
 
 namespace uMigrations
 {
-    public class MigrationsSettings
+    public interface IMigrationSettings
+    {
+        int SystemUserId { get; }
+        bool SkipMigrations { get; }
+        bool EmulateMigrations { get; }
+        string MigrationRuntimeId { get; }
+    }
+
+    public class MigrationsSettings : IMigrationSettings
     {
         private readonly Lazy<string> _migrationRuntimeId = new Lazy<string>(() => DateTime.Now.ToString("s").Replace("-", "_").Replace(":", "_"));
 

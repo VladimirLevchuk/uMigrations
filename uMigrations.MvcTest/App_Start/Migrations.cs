@@ -1,4 +1,6 @@
 ﻿using System;
+using Umbraco.Core;
+using uMigrations.Persistance;
 
 namespace uMigrations.MvcTest
 {
@@ -19,11 +21,11 @@ namespace uMigrations.MvcTest
             migration.MoveProperty("moveToBase2").ToBaseType("Level11").ToTab("TestTab").Mandatory().WithDefault("default").FromTypes("Level21", "Level22");
         }
 
-        protected override void Remove(FluentMigrationStepDefinition migration)
-        {
-            migration.MoveProperty("level2Prop2").ToDerivedTypes("Level2").FromType("Level1");
-            migration.MoveProperty("moveToBase").ToDerivedTypes("Level21", "Level22").FromType("Level11");
-            migration.MoveProperty("moveToBase2").ToDerivedTypes("Level21", "Level22").Mandatory().FromType("Level11");
-        }
+        //protected override void Apply(FluentMigrationStepDefinition migration)
+        //{
+        //    migration.MoveProperty("level2Prop2").ToDerivedTypes("Level2").FromType("Level1");
+        //    migration.MoveProperty("moveToBase").ToDerivedTypes("Level21", "Level22").FromType("Level11");
+        //    migration.MoveProperty("moveToBase2").ToDerivedTypes("Level21", "Level22").Mandatory().FromType("Level11");
+        //}
     }
 }

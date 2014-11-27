@@ -13,13 +13,13 @@ namespace uMigrations
         protected IContentTypeService ContentTypeService { get; private set; }
         protected IContentService ContentService { get; private set; }
         protected IDataTypeService DataTypeService { get; private set; }
-        protected MigrationsSettings MigrationsSettings { get; private set; }
+        protected IMigrationSettings MigrationsSettings { get; private set; }
 
         public ContentMigrationService(
             IContentTypeService contentTypeService, 
             IContentService contentService,
             IDataTypeService dataTypeService,
-            MigrationsSettings migrationsSettings)
+            IMigrationSettings migrationsSettings)
         {
             ContentTypeService = contentTypeService;
             ContentService = contentService;

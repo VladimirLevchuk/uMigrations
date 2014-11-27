@@ -14,8 +14,8 @@ namespace uMigrations
             get { return "Move Property Up"; }
         }
 
-        public MovePropertyUp(MovePropertyUpParameters parameters, 
-            MigrationsSettings migrationSettings,
+        public MovePropertyUp(MovePropertyUpParameters parameters,
+            IMigrationSettings migrationSettings,
             IContentMigrationService contentMigrationService, 
             ILog log) : base(parameters, migrationSettings, contentMigrationService, log)
         {}
