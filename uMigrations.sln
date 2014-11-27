@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uMigrations.MvcTest", "uMig
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uMigrations", "uMigrations\uMigrations.csproj", "{9B0C7557-7972-441B-B1E8-36C4B1C1AC9E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uMigrations.Tests", "uMigrations.Tests\uMigrations.Tests.csproj", "{7D8826DB-81B7-42B7-A8B1-FA0B9E14C4BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{9B0C7557-7972-441B-B1E8-36C4B1C1AC9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B0C7557-7972-441B-B1E8-36C4B1C1AC9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B0C7557-7972-441B-B1E8-36C4B1C1AC9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D8826DB-81B7-42B7-A8B1-FA0B9E14C4BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D8826DB-81B7-42B7-A8B1-FA0B9E14C4BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D8826DB-81B7-42B7-A8B1-FA0B9E14C4BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D8826DB-81B7-42B7-A8B1-FA0B9E14C4BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
