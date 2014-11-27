@@ -128,8 +128,9 @@ namespace uMigrations
 
                 ContentMigrationService.UpdateContent(content);
 
-                // invalidate cmsPropeprtyData cache to fix strange errors
-                ContentMigrationService.GetContentById(content.Id);
+                // commented out: it's not a fix. Most probably on IIS and SQL Server it won't be an issue at all. 
+                //// invalidate cmsPropeprtyData cache to fix strange errors
+                //ContentMigrationService.GetContentById(content.Id);
 
                 UpdatedContent.Add(content.Id);
             }
