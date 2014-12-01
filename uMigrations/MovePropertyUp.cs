@@ -123,6 +123,11 @@ namespace uMigrations
 
         private void ProcessTab(string contentTypeAlias, string propertyAlias, string tabName)
         {
+            if (tabName == null)
+            {
+                return;
+            }
+
             var contentType = ContentMigrationService.GetContentType(contentTypeAlias);
             var property = ContentMigrationService.GetPropetyType(contentType, propertyAlias);
             ProcessTab(contentType, property, tabName);

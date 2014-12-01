@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using NUnit.Framework;
-using umbraco.cms.businesslogic;
+﻿using NUnit.Framework;
 using Umbraco.Core;
-using Umbraco.Core.Persistence;
 using uMigrations.Tests.Models.Db;
 
 namespace uMigrations.Tests
@@ -14,8 +11,16 @@ namespace uMigrations.Tests
         [Test]
         public void When_Test_Started_Db_Schema_Created()
         {
+            _repo.CreateSchema();
+
             var tables = _repo.GetAll();
             Assert.That(tables.Count > 0);
+        }
+
+        [TearDown]
+        public void Cleanup()
+        {
+            _repo.DeleteAll();
         }
     }
 }

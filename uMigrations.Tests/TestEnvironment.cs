@@ -12,12 +12,12 @@ namespace uMigrations.Tests
         {
             _application.Start();
             _repo = new DbTableRepository(ApplicationContext.Current.DatabaseContext.Database);
-            _repo.CreateSchema();
+            // _repo.CreateSchema();
         }
 
         public void Shutdown()
         {
-            _repo.DeleteAll();
+            // _repo.DeleteAll();
             _application.Finish();
         }
     }

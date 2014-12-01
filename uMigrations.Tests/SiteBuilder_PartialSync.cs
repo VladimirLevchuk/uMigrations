@@ -2,12 +2,13 @@ using System;
 using FluentAssertions;
 using NUnit.Framework;
 using Umbraco.Core;
+using uMigrations.Tests.Models.Db;
 using Vega.USiteBuilder;
 using Vega.USiteBuilder.DocumentTypeBuilder.Contracts;
 
 namespace uMigrations.Tests
 {
-    public class SiteBuilder_PartialSync
+    public class SiteBuilder_PartialSync : TestBase
     {
         [DocumentType(IconUrl = "doc4.gif",
             Thumbnail = "doc.png",
@@ -44,10 +45,23 @@ namespace uMigrations.Tests
             public virtual string Level2Prop2 { get; set; }
         }
 
+        protected override void BeforeAll()
+        {
+            var _repo = new DbTableRepository(Db);
+            _repo.CreateSchema();
+        }
+
+        protected override void AfterAll()
+        {
+            var _repo = new DbTableRepository(Db);
+            _repo.DeleteAll();
+            base.AfterAll();
+        }
+
         [Test]
         public void Test()
         {
-            var docTypeManager = new DocumentTypeManager();
+            var docTypeManager = new TestDocumentTypeManager();
             docTypeManager.SynchronizeDocumentTypes(new [] { typeof(Level1), typeof(Level2) });
 
             var service = ApplicationContext.Current.Services.ContentTypeService;
