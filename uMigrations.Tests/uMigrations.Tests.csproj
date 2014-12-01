@@ -42,6 +42,10 @@
       <HintPath>..\packages\UmbracoCms.Core.7.1.9\lib\businesslogic.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Castle.Core, Version=3.2.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Castle.Core.3.2.2\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
     <Reference Include="ClientDependency.Core">
       <HintPath>..\packages\ClientDependency.1.7.1.2\lib\ClientDependency.Core.dll</HintPath>
       <Private>True</Private>
@@ -144,6 +148,7 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.4.0.30506.0\lib\net40\System.Net.Http.Formatting.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.20710.0\lib\net40\System.Web.Helpers.dll</HintPath>
@@ -221,10 +226,16 @@
       <HintPath>..\packages\UmbracoCms.Core.7.1.9\lib\UrlRewritingNet.UrlRewriter.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Vega.USiteBuilder">
+      <HintPath>..\packages\uSiteBuilder.2.1.4-alpha1\lib\net45\Vega.USiteBuilder.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="Db_Schema_Created.cs" />
+    <Compile Include="TestBootManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestApplication.cs" />
+    <Compile Include="TestEnvironment.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\uMigrations\uMigrations.csproj">
@@ -251,7 +262,9 @@
     <None Include="config\trees.config" />
     <None Include="config\umbracoSettings.config" />
     <None Include="config\UrlRewriting.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\foo.txt" />

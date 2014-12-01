@@ -214,8 +214,9 @@
     <Reference Include="UrlRewritingNet.UrlRewriter">
       <HintPath>..\packages\UmbracoCms.Core.7.1.8\lib\UrlRewritingNet.UrlRewriter.dll</HintPath>
     </Reference>
-    <Reference Include="Vega.USiteBuilder">
-      <HintPath>..\packages\uSiteBuilder.2.1.3\lib\net45\Vega.USiteBuilder.dll</HintPath>
+    <Reference Include="Vega.USiteBuilder, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\uSiteBuilder.2.1.4-alpha1\lib\net45\Vega.USiteBuilder.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

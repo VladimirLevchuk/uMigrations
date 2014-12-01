@@ -11,3 +11,5 @@ uMigrations.MvcTest/bin/
 uMigrations.MvcTest/App_Data/umbraco.config
 uMigrations/bin/
 uMigrations.Tests/App_Data/NuGetBackup/
+uMigrations.Tests/bin/
+uMigrations.Tests/App_Data/TEMP/
