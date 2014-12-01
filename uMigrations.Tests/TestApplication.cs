@@ -15,18 +15,24 @@ namespace uMigrations.Tests
             var binDirectory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
             BaseDirectory = ResolveBasePath(binDirectory);
             DataDirectory = Path.Combine(BaseDirectory, "app_data");
+            
             var appDomainConfigPath = new DirectoryInfo(Path.Combine(binDirectory.FullName, "config"));
 
             //Copy config files to AppDomain's base directory
-            if (binDirectory.FullName.Equals(BaseDirectory) == false &&
-                appDomainConfigPath.Exists == false)
+            if (binDirectory.FullName.Equals(BaseDirectory) == false)
             {
-                appDomainConfigPath.Create();
-                var baseConfigPath = new DirectoryInfo(Path.Combine(BaseDirectory, "config"));
-                var sourceFiles = baseConfigPath.GetFiles("*.config", SearchOption.TopDirectoryOnly);
-                foreach (var sourceFile in sourceFiles)
+                RemoveDir(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_data"));
+
+                if (appDomainConfigPath.Exists == false)
                 {
-                    sourceFile.CopyTo(sourceFile.FullName.Replace(baseConfigPath.FullName, appDomainConfigPath.FullName), true);
+                    appDomainConfigPath.Create();
+                    var baseConfigPath = new DirectoryInfo(Path.Combine(BaseDirectory, "config"));
+                    var sourceFiles = baseConfigPath.GetFiles("*.config", SearchOption.TopDirectoryOnly);
+                    foreach (var sourceFile in sourceFiles)
+                    {
+                        sourceFile.CopyTo(
+                            sourceFile.FullName.Replace(baseConfigPath.FullName, appDomainConfigPath.FullName), true);
+                    }
                 }
             }
 
@@ -35,9 +41,57 @@ namespace uMigrations.Tests
             return new TestBootManager(this, BaseDirectory);
         }
 
+        private void RemoveDir(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+            {
+                return;
+            }
+
+            var files = Directory.EnumerateFiles(path);
+            var directories = Directory.EnumerateDirectories(path);
+
+            foreach (var file in files)
+            {
+                File.Delete(file);
+            }
+
+            foreach (var directory in directories)
+            {
+                RemoveDir(directory);
+            }
+
+            Directory.Delete(path);
+        }
+        
         public void Start()
         {
+            if (string.IsNullOrEmpty(BaseDirectory))
+            {
+                var bootManager = GetBootManager();
+            }
+
             base.Application_Start(this, new EventArgs());
+        }
+
+        private void _RemoveCopies(string dataDirectoryPath, string configDirectoryPath)
+        {
+            RemoveDir(configDirectoryPath);
+
+            RemoveDir(dataDirectoryPath);
+        }
+
+        private void _RemoveDirectories()
+        {
+            var directories = Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory).ToList();
+
+            directories.ForEach(RemoveDir);
+        }
+
+        public void Finish()
+        {
+            // var config = Path.Combine(BaseDirectory, "config");
+            _RemoveDirectories();
         }
 
         private string ResolveBasePath(DirectoryInfo currentFolder)
