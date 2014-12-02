@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NSpec;
 using NSpec.Domain;
@@ -31,11 +33,24 @@ namespace uMigrations.Tests
         {
             var tagOrClassName = "acceptance";
 
+            var t = new Tags().Parse(tagOrClassName);
+
             var types = GetType().Assembly.GetTypes();
             // OR
             // var types = new Type[]{typeof(Some_Type_Containg_some_Specs)};
-            var finder = new SpecFinder(types, "");
-            var builder = new ContextBuilder(finder, new Tags().Parse(tagOrClassName), new DefaultConventions());
+            Run(types, "", tagOrClassName);
+        }
+
+        private void Run(string classSelectorRegularExpression, string tagsFilter)
+        {
+            var types = GetType().Assembly.GetTypes();
+            Run(types, classSelectorRegularExpression, tagsFilter);
+        }
+
+        private void Run(Type[] types, string classSelectorRegularExpression, string tagsFilter)
+        {
+            var finder = new SpecFinder(types, classSelectorRegularExpression);
+            var builder = new ContextBuilder(finder, new Tags().Parse(tagsFilter), new DefaultConventions());
             var runner = new ContextRunner(builder, new ConsoleFormatter(), false);
             var results = runner.Run(builder.Contexts().Build());
 
@@ -43,6 +58,5 @@ namespace uMigrations.Tests
             results.Failures().Count().should_be(0);
         }
     }
-
 }
 

@@ -248,7 +248,7 @@
     <Compile Include="Clean_Database.cs" />
     <Compile Include="DebuggerShim.cs" />
     <Compile Include="features\MovePropertyUp\describe_Move_Property_Up_With_No_Content.cs" />
-    <Compile Include="features\MovePropertyUp\describe_Order.cs" />
+    <Compile Include="features\example\describe_Execution_Order_Example.cs" />
     <Compile Include="features\MovePropertyUp\feature.cs" />
     <Compile Include="features\MovePropertyUp\MigrationTestUtil.cs" />
     <Compile Include="features\MovePropertyUp\Models\Class1.cs" />

@@ -4,8 +4,12 @@ using NSpec;
 
 namespace uMigrations.Tests.features.MovePropertyUp
 {
+    /* uncomment Console.Write in after_all to see the example. 
+     * due to bug in nspec after_all is called even when spec is excluded from execution by tag filter
+     */
+
     [Tag("example")]
-    internal class describe_Order : feature
+    internal class describe_Execution_Order_Example : feature
     {
         private static StringBuilder _buffer = new StringBuilder();
 
@@ -17,7 +21,7 @@ namespace uMigrations.Tests.features.MovePropertyUp
         private void after_all()
         {
             _buffer.AppendLine("after_all");
-            Console.Write(_buffer.ToString());
+             // Console.Write(_buffer.ToString());
         }
 
         private void before_each()
