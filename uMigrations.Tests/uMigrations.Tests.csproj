@@ -238,20 +238,25 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\UmbracoCms.Core.7.1.8\lib\UrlRewritingNet.UrlRewriter.dll</HintPath>
     </Reference>
-    <Reference Include="Vega.USiteBuilder, Version=2.1.5449.21339, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Vega.USiteBuilder, Version=2.1.5449.31664, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\uSiteBuilder.2.1.4-alpha3\lib\net45\Vega.USiteBuilder.dll</HintPath>
+      <HintPath>..\packages\uSiteBuilder.2.1.4-alpha4\lib\net45\Vega.USiteBuilder.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppStart.cs" />
     <Compile Include="Clean_Database.cs" />
     <Compile Include="DebuggerShim.cs" />
-    <Compile Include="features\MovePropertyUp\describe_Move_Property_Up_With_No_Content.cs" />
+    <Compile Include="features\Framework\DocumentRepository.cs" />
+    <Compile Include="features\Framework\NodeRepository.cs" />
+    <Compile Include="features\Migrations\MigrationsSettings.cs" />
+    <Compile Include="features\Migrations\MovePropertyUp\describe_Move_Property_Up_Feature.cs" />
     <Compile Include="features\example\describe_Execution_Order_Example.cs" />
-    <Compile Include="features\MovePropertyUp\feature.cs" />
-    <Compile Include="features\MovePropertyUp\MigrationTestUtil.cs" />
-    <Compile Include="features\MovePropertyUp\Models\Class1.cs" />
+    <Compile Include="features\feature.cs" />
+    <Compile Include="features\Migrations\migrations_feature.cs" />
+    <Compile Include="features\Migrations\MigrationTestUtil.cs" />
+    <Compile Include="features\Migrations\MovePropertyUp\Models\SimpleHierarchy.cs" />
+    <Compile Include="features\Migrations\MovePropertyUp\TestMigrationStep.cs" />
     <Compile Include="Models\Db\DbTable.cs" />
     <Compile Include="Db_Schema_Created.cs" />
     <Compile Include="Models\Db\DbTableRepository.cs" />

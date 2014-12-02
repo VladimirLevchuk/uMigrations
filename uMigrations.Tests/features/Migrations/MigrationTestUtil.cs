@@ -7,19 +7,11 @@ using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
 using uMigrations.Persistance;
 
-namespace uMigrations.Tests.features.MovePropertyUp
+namespace uMigrations.Tests.features.Migrations
 {
-    public class MigrationsSettings : IMigrationSettings
-    {
-        public int SystemUserId { get; set; }
-        public bool SkipMigrations { get; set; }
-        public bool EmulateMigrations { get; set; }
-        public string MigrationRuntimeId { get; set; }
-    }
-
     public class MigrationTestUtil
     {
-        public static MigrationContext CreateMigrationContext(MigrationsSettings migrationSettings)
+        public static MigrationContext CreateMigrationContext(IMigrationSettings migrationSettings)
         {
             var dbContext = ApplicationContext.Current.DatabaseContext;
 
@@ -49,7 +41,7 @@ namespace uMigrations.Tests.features.MovePropertyUp
             var runner = new ManualMigrationRunner(logFactoryMethod(typeof(ManualMigrationRunner)), transactionProvider, contentMigrationService,
                 migrationInfoRepository, migrationSettings);
 
-            var result = new MigrationContext(migrationSettings,
+            var result = new MigrationContext(migrationSettings, contentService, contentTypeService,
                 contentMigrationService, transactionProvider, logFactoryMethod, runner);
             return result;
         }        

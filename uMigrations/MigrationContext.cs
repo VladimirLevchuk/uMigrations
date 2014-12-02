@@ -16,6 +16,8 @@ namespace uMigrations
         public virtual IMigrationTransactionProvider TransactionProvider { get; private set; }
         public virtual Func<Type, ILog> LogFactoryMethod { get; private set; }
         public virtual IMigrationRunner Runner { get; private set; }
+        public virtual IContentService ContentService { get; private set; }
+        public virtual IContentTypeService ContentTypeService { get; private set; }
 
         public static MigrationContext Current
         {
@@ -27,11 +29,15 @@ namespace uMigrations
         private static readonly Lazy<MigrationContext> _currentContext = new Lazy<MigrationContext>(CreateDefaultContext);
 
         public MigrationContext(IMigrationSettings migrationSettings, 
+            IContentService contentService, 
+            IContentTypeService contentTypeService,
             IContentMigrationService contentMigrationService, 
             IMigrationTransactionProvider transactionProvider, 
             Func<Type, ILog> logFactoryMethod, 
             IMigrationRunner runner)
         {
+            ContentTypeService = contentTypeService;
+            ContentService = contentService;
             Runner = runner;
             MigrationSettings = migrationSettings;
             ContentMigrationService = contentMigrationService;
@@ -71,7 +77,7 @@ namespace uMigrations
             var runner = new ManualMigrationRunner(logFactoryMethod(typeof(ManualMigrationRunner)), transactionProvider, contentMigrationService,
                 migrationInfoRepository, migrationSettings);
 
-            var result = new MigrationContext(migrationSettings, 
+            var result = new MigrationContext(migrationSettings, contentService, contentTypeService,
                 contentMigrationService, transactionProvider, logFactoryMethod, runner);
             return result;
         }

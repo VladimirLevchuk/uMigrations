@@ -3,7 +3,7 @@ using Umbraco.Core;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Services;
 
-namespace uMigrations.Tests.features.MovePropertyUp
+namespace uMigrations.Tests.features
 {
     public abstract class feature : nspec
     {
